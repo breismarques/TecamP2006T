@@ -10,7 +10,7 @@ from subprocess import call
 # SUAVE Imports
 import SUAVE
 from SUAVE.Core import Data, Units
-from SUAVE.Components.Energy.Networks.Solar import Solar
+from SUAVE.Components.Energy.Networks.Battery_Propeller import Battery_Propeller
 from SUAVE.Methods.Propulsion import propeller_design
 from SUAVE.Input_Output.Results import  print_parasite_drag,  \
      print_compress_drag, \
@@ -453,23 +453,12 @@ def vehicle_setup():
     # ------------------------------------------------------------------    
     
     # build network
-    net = Solar()
+    net = Battery_Propeller()
     net.number_of_engines = 6
     net.nacelle_diameter  = 0.58 * Units.meters
     net.engine_length     = 1.74 * Units.meters
     net.areas             = Data()
     net.areas.wetted      = 1.1*np.pi*net.nacelle_diameter*net.engine_length
-    
-    # Component 1 the Sun?
-    sun = SUAVE.Components.Energy.Processes.Solar_Radiation()
-    net.solar_flux = sun
-    
-    # Component 2 the solar panels
-    panel = SUAVE.Components.Energy.Converters.Solar_Panel()
-    panel.area                 = vehicle.reference_area * 0.9
-    panel.efficiency           = 0.25
-    panel.mass_properties.mass = panel.area*(0.60 * Units.kg)
-    net.solar_panel            = panel
     
     # Component 3 the ESC
     esc = SUAVE.Components.Energy.Distributors.Electronic_Speed_Controller()
@@ -547,11 +536,6 @@ def vehicle_setup():
     initialize_from_mass(bat,bat.mass_properties.mass)
     net.battery              = bat
    
-    #Component 9 the system logic controller and MPPT
-    logic = SUAVE.Components.Energy.Distributors.Solar_Logic()
-    logic.system_voltage  = 40.0
-    logic.MPPT_efficiency = 0.95
-    net.solar_logic       = logic
     
     # ------------------------------------------------------------------
     #   Vehicle Definition Complete
@@ -697,7 +681,7 @@ def mission_setup(analyses,vehicle):
     #   Cruise Segment: constant speed, constant altitude
     # ------------------------------------------------------------------    
     
-    segment = SUAVE.Analyses.Mission.Segments.Cruise.Constant_Mach_Constant_Altitude(base_segment)
+    segment = SUAVE.Analyses.Mission.Segments.Cruise.Constant_Speed_Constant_Altitude(base_segment)
     segment.tag = "cruise1"
     
     # connect vehicle configuration
@@ -706,12 +690,12 @@ def mission_setup(analyses,vehicle):
     # segment attributes     
     segment.state.numerics.number_control_points = 64
     segment.start_time     = time.strptime("Tue, Jun 21 11:30:00  2017", "%a, %b %d %H:%M:%S %Y",)
-    segment.altitude       = 15.0  * Units.km 
-    segment.mach           = 0.12
-    segment.distance       = 3050.0 * Units.km
+    segment.altitude       = 3048.0 * Units.meter
+    segment.air_speed  = 50. * Units.knots
+    segment.distance       = 100.0 * Units.nautical_miles
     segment.battery_energy = vehicle.propulsors.network.battery.max_energy*0.2 #Charge the battery to start
-    segment.latitude       = 37.4300   # this defaults to degrees (do not use Units.degrees)
-    segment.longitude      = -122.1700 # this defaults to degrees
+    #segment.latitude       = 37.4300   # this defaults to degrees (do not use Units.degrees)
+    #segment.longitude      = -122.1700 # this defaults to degrees
     
     mission.append_segment(segment)    
 
