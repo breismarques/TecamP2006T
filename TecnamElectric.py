@@ -457,6 +457,8 @@ def vehicle_setup():
     net.number_of_engines = 6
     net.nacelle_diameter  = 0.58 * Units.meters
     net.engine_length     = 1.74 * Units.meters
+    net.thrust_angle      = 0.0 * Units.degrees
+    net.voltage           = 40.0
     net.areas             = Data()
     net.areas.wetted      = 1.1*np.pi*net.nacelle_diameter*net.engine_length
     
@@ -672,7 +674,8 @@ def mission_setup(analyses,vehicle):
     base_segment = Segments.Segment()   
     ones_row     = base_segment.state.ones_row
     base_segment.process.iterate.unknowns.network            = vehicle.propulsors.network.unpack_unknowns
-    base_segment.process.iterate.residuals.network           = vehicle.propulsors.network.residuals    
+    base_segment.process.iterate.residuals.network           = vehicle.propulsors.network.residuals
+    base_segment.state.unknowns.battery_voltage_under_load   = vehicle.propulsors.network.battery.max_voltage * ones_row(1)    
     base_segment.process.iterate.initials.initialize_battery = SUAVE.Methods.Missions.Segments.Common.Energy.initialize_battery
     base_segment.state.unknowns.propeller_power_coefficient  = vehicle.propulsors.network.propeller.prop_attributes.Cp  * ones_row(1)/15.
     base_segment.state.residuals.network                     = 0. * ones_row(1)      
