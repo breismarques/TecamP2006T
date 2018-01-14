@@ -678,7 +678,45 @@ def mission_setup(analyses,vehicle):
     base_segment.state.unknowns.battery_voltage_under_load   = vehicle.propulsors.network.battery.max_voltage * ones_row(1)    
     base_segment.process.iterate.initials.initialize_battery = SUAVE.Methods.Missions.Segments.Common.Energy.initialize_battery
     base_segment.state.unknowns.propeller_power_coefficient  = vehicle.propulsors.network.propeller.prop_attributes.Cp  * ones_row(1)/15.
-    base_segment.state.residuals.network                     = 0. * ones_row(1)      
+    base_segment.state.residuals.network                     = 0. * ones_row(2)      
+    
+    # ------------------------------------------------------------------
+    #   First Climb Segment: Constant Speed, Constant Rate
+    # ------------------------------------------------------------------
+
+    segment = Segments.Climb.Constant_Speed_Constant_Rate(base_segment)
+    segment.tag = "climb_1"
+
+    segment.analyses.extend( analyses.takeoff )
+
+    
+    segment.state.numerics.number_control_points = 64
+    segment.altitude_start = 0.0   * Units.meter
+    segment.altitude_end   = 91.4402   * Units.meter
+    segment.air_speed  = 64 * Units.knots
+    segment.battery_energy = vehicle.propulsors.network.battery.max_energy*0.2 #Charge the battery to start
+    segment.climb_rate     = 1.168  * Units['m/s']
+    
+    # add to misison
+    mission.append_segment(segment)
+    
+    # ------------------------------------------------------------------
+    #   Second Climb Segment: Constant Speed, Constant Rate
+    # ------------------------------------------------------------------
+
+    segment = Segments.Climb.Constant_Speed_Constant_Rate(base_segment)
+    segment.tag = "climb_2"
+
+    segment.analyses.extend( analyses.cruise )
+
+    
+    segment.state.numerics.number_control_points = 64
+    segment.altitude_end   = 3048.0   * Units.meter
+    segment.air_speed  = 80 * Units.knots
+    segment.climb_rate     = 1.016  * Units['m/s']
+
+    # add to misison
+    mission.append_segment(segment)
     
     # ------------------------------------------------------------------    
     #   Cruise Segment: constant speed, constant altitude
@@ -692,15 +730,49 @@ def mission_setup(analyses,vehicle):
     
     # segment attributes     
     segment.state.numerics.number_control_points = 64
-    segment.start_time     = time.strptime("Tue, Jun 21 11:30:00  2017", "%a, %b %d %H:%M:%S %Y",)
     segment.altitude       = 3048.0 * Units.meter
     segment.air_speed  = 50. * Units.knots
     segment.distance       = 100.0 * Units.nautical_miles
-    segment.battery_energy = vehicle.propulsors.network.battery.max_energy*0.2 #Charge the battery to start
-    #segment.latitude       = 37.4300   # this defaults to degrees (do not use Units.degrees)
-    #segment.longitude      = -122.1700 # this defaults to degrees
     
     mission.append_segment(segment)    
+    
+    # ------------------------------------------------------------------
+    #   First Descent Segment: Constant Speed, Constant Rate
+    # ------------------------------------------------------------------
+
+    segment = Segments.Descent.Constant_Speed_Constant_Rate(base_segment)
+    segment.tag = "descent_1"
+
+    segment.analyses.extend( analyses.cruise )
+     
+    
+    # segment attributes     
+    segment.state.numerics.number_control_points = 64
+    segment.altitude_end = 2000.0   * Units.meter
+    segment.air_speed    = 100.0 * Units.knots
+    segment.descent_rate = 1.016   * Units['m/s']
+
+    # add to mission
+    mission.append_segment(segment)
+    
+    # ------------------------------------------------------------------
+    #   Second Descent Segment: Constant Speed, Constant Rate
+    # ------------------------------------------------------------------
+
+    segment = Segments.Descent.Constant_Speed_Constant_Rate(base_segment)
+    segment.tag = "descent_2"
+
+    segment.analyses.extend( analyses.landing )
+    analyses.landing.aerodynamics.settings.spoiler_drag_increment = 0.00
+    
+    # segment attributes     
+    segment.state.numerics.number_control_points = 64
+    segment.altitude_end = 0.0   * Units.meter
+    segment.air_speed    = 64 * Units.knots
+    segment.descent_rate = 1.168   * Units['m/s']
+
+    # add to mission
+    mission.append_segment(segment)
 
     # ------------------------------------------------------------------    
     #   Mission definition complete    
@@ -870,20 +942,7 @@ def plot_mission(results):
         axes.plot(time, energy, 'bo-')
     axes.set_xlabel('Time (mins)')
     axes.set_ylabel('Battery Energy (J)')
-    axes.grid(True)   
-    
-    # ------------------------------------------------------------------    
-    #   Solar Flux
-    # ------------------------------------------------------------------
-    plt.figure("Solar Flux")
-    axes = plt.gca()    
-    for i in range(len(results.segments)):     
-        time     = results.segments[i].conditions.frames.inertial.time[:,0] / Units.min
-        energy = results.segments[i].conditions.propulsion.solar_flux[:,0] 
-        axes.plot(time, energy, 'bo-')
-    axes.set_xlabel('Time (mins)')
-    axes.set_ylabel('Solar Flux ($W/m^{2}$)')
-    axes.grid(True)      
+    axes.grid(True)
     
     # ------------------------------------------------------------------    
     #   Current Draw
@@ -988,15 +1047,9 @@ def plot_mission(results):
     fig = plt.figure("Electric Outputs")
     for segment in results.segments.values():
         
-        time   = segment.conditions.frames.inertial.time[:,0] / Units.min
-        flux   = results.segments[i].conditions.propulsion.solar_flux[:,0] 
+        time   = segment.conditions.frames.inertial.time[:,0] / Units.min 
         charge = results.segments[i].conditions.propulsion.battery_draw[:,0] 
         energy = results.segments[i].conditions.propulsion.battery_energy[:,0] / Units.MJ
-
-        axes = fig.add_subplot(3,1,1)
-        axes.plot( time , flux , 'bo-' )
-        axes.set_ylabel('Solar Flux (W/m$^2$)')
-        axes.grid(True)
         
         axes = fig.add_subplot(3,1,2)
         axes.plot( time , charge , 'bo-' )
