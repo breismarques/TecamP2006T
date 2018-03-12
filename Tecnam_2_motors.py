@@ -481,7 +481,7 @@ def vehicle_setup():
 
     # Component 6 - the Battery
     bat = SUAVE.Components.Energy.Storages.Batteries.Constant_Mass.Lithium_Ion()
-    bat.mass_properties.mass = 25.595 * Units.kg #total 358.33
+    bat.mass_properties.mass = 358.33 * Units.kg
     bat.specific_energy      = 192.84 * Units.Wh/Units.kg
     bat.specific_power       = 0.837 * Units.kW/Units.kg
     bat.resistance           = 0.05
@@ -617,32 +617,32 @@ def mission_setup(analyses,vehicle):
     mission.atmosphere  = SUAVE.Attributes.Atmospheres.Earth.US_Standard_1976()
     mission.planet      = SUAVE.Attributes.Planets.Earth()
     
-    # unpack Segments module
-    Segments = SUAVE.Analyses.Mission.Segments
-    
-    # base segment
-    base_segment = Segments.Segment()   
-    ones_row     = base_segment.state.ones_row
-    base_segment.process.iterate.unknowns.network            = vehicle.propulsors.network.unpack_unknowns
-    base_segment.process.iterate.residuals.network           = vehicle.propulsors.network.residuals
-    base_segment.state.unknowns.battery_voltage_under_load   = vehicle.propulsors.network.battery.max_voltage * ones_row(1)    
-    base_segment.process.iterate.initials.initialize_battery = SUAVE.Methods.Missions.Segments.Common.Energy.initialize_battery
-    base_segment.state.unknowns.propeller_power_coefficient  = vehicle.propulsors.network.propeller.prop_attributes.Cp  * ones_row(1)/15.
-    base_segment.state.residuals.network                     = 0. * ones_row(2)      
-    
     
     # ------------------------------------------------------------------    
     #   Cruise Segment: constant speed, constant altitude
-    # ------------------------------------------------------------------    
+    # ------------------------------------------------------------------  
     
-    segment = SUAVE.Analyses.Mission.Segments.Cruise.Constant_Speed_Constant_Altitude(base_segment)
+    # unpack Segments module
+    Segments = SUAVE.Analyses.Mission.Segments
+    
+    # no lifting motors segment
+    no_lift_segment = Segments.Segment()   
+    ones_row     = no_lift_segment.state.ones_row
+    no_lift_segment.process.iterate.unknowns.network  = vehicle.base.propulsors.propulsor.unpack_unknowns_no_lift
+    no_lift_segment.process.iterate.residuals.network = vehicle.base.propulsors.propulsor.residuals_no_lift
+    no_lift_segment.state.unknowns.battery_voltage_under_load   = vehicle.propulsors.network.battery.max_voltage * ones_row(1)    
+    no_lift_segment.process.iterate.initials.initialize_battery = SUAVE.Methods.Missions.Segments.Common.Energy.initialize_battery
+    no_lift_segment.state.residuals.network           = 0. * ones_row(1)
+    
+    
+    segment = SUAVE.Analyses.Mission.Segments.Cruise.Constant_Speed_Constant_Altitude(no_lift_segment)
     segment.tag = "cruise1"
     
     # connect vehicle configuration
-    segment.analyses.extend( analyses.cruise)
+    segment.analyses.extend(analyses.cruise)
     
     # segment attributes     
-    segment.state.numerics.number_control_points = 64
+    segment.state.numerics.number_control_points = 16
     segment.altitude       = 2000 * Units.meter
     segment.air_speed  = 30. * Units.knots
     segment.distance       = 25 * Units.nautical_miles
