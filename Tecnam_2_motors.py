@@ -57,7 +57,7 @@ def full_setup():
     configs_analyses = analyses_setup(configs)
 
     # mission analyses
-    mission  = mission_setup(configs_analyses,vehicle)
+    mission  = mission_setup(configs_analyses,configs)
     missions_analyses = missions_setup(mission)
 
     analyses = SUAVE.Analyses.Analysis.Container()
@@ -147,11 +147,10 @@ def vehicle_setup():
     # ------------------------------------------------------------------    
 
     # mass properties
-    vehicle.mass_properties.max_takeoff               = 1230 * Units.kilogram 
-    vehicle.mass_properties.takeoff                   = 1230 * Units.kilogram   
+    vehicle.mass_properties.max_takeoff               = 1400* Units.kilogram 
+    vehicle.mass_properties.takeoff                   = 1400 * Units.kilogram   
     vehicle.mass_properties.operating_empty           = 819 * Units.kilogram 
-    vehicle.mass_properties.takeoff                   = 1230 * Units.kilogram 
-    vehicle.mass_properties.max_zero_fuel             = 1145 * Units.kilogram 
+    vehicle.mass_properties.max_zero_fuel             = 1400 * Units.kilogram 
     vehicle.mass_properties.cargo                     = 80  * Units.kilogram   
     
     # envelope properties
@@ -159,7 +158,7 @@ def vehicle_setup():
     vehicle.envelope.limit_load    = 3.8
 
     # basic parameters
-    vehicle.reference_area         = 73 * Units['meters**2']  
+    vehicle.reference_area         = 64.4 * Units['meters**2']  
     vehicle.passengers             = 4
     vehicle.systems.control        = "fully powered" 
     vehicle.systems.accessories    = "medium range"
@@ -188,20 +187,20 @@ def vehicle_setup():
     wing = SUAVE.Components.Wings.Main_Wing()
     wing.tag = 'main_wing'
     
-    wing.aspect_ratio            = 8.80
-    #wing.sweeps.quarter_chord    = 0 * Units.deg
+    wing.aspect_ratio            = 15.0
     wing.thickness_to_chord      = 0.15
-    wing.taper                   = 0.621
-    wing.span_efficiency         = 0.965
-    wing.spans.projected         = 11.4 * Units.meter
-    wing.chords.root             = 1.45 * Units.meter
-    wing.chords.tip              = 0.90 * Units.meter
-    wing.chords.mean_aerodynamic = 1.34 * Units.meter
-    wing.areas.reference         = 14.80 * Units['meters**2']  
+    wing.taper                   = 0.7016
+    wing.span_efficiency         = 0.9564
+    wing.spans.projected         = 9.631680 * Units.meter
+    wing.chords.root             = 0.7559040 * Units.meter
+    wing.chords.tip              = 0.5303520 * Units.meter
+    wing.chords.mean_aerodynamic = 0.6 * Units.meter
+    wing.areas.reference         = 6.196633 * Units['meters**2']  
     wing.twists.root             = 0 * Units.degrees
     wing.twists.tip              = 0 * Units.degrees
     wing.dihedral= 1 * Units.degrees
     wing.origin                  = [2.986,0,1.077] # meters
+    wing.sweeps.leading_edge  = 1.9 * Units.deg
     wing.vertical                = False
     wing.symmetric               = True
     wing.high_lift               = True
@@ -229,24 +228,6 @@ def vehicle_setup():
     wing.Segments.append(segment)
     
     
-    # Mid Segment
-    
-    segment = SUAVE.Components.Wings.Segment()
-    
-    segment.tag                   = 'mid'
-    segment.percent_span_location = 0.53
-    segment.twist                 = 0. * Units.deg
-    segment.root_chord_percent    = 1.
-    segment.dihedral_outboard     = 1. * Units.degrees
-    segment.sweeps.quarter_chord  = 0. * Units.degrees
-    segment.thickness_to_chord    = 0.15
-     
-    airfoil = SUAVE.Components.Wings.Airfoils.Airfoil()
-    airfoil.coordinate_file       = '/Users/Bruno/Documents/Delft/Courses/2016-2017/Thesis/Code/Airfoils/naca642415.dat'
-    
-    segment.append_airfoil(airfoil)
-    wing.Segments.append(segment)
-    
     # Tip Segment
     
     segment = SUAVE.Components.Wings.Segment()
@@ -254,7 +235,7 @@ def vehicle_setup():
     segment.tag                   = 'tip'
     segment.percent_span_location = 1.0
     segment.twist                 = 0. * Units.deg
-    segment.root_chord_percent    = 0.621
+    segment.root_chord_percent    = 1.
     segment.dihedral_outboard     = 1. * Units.degrees
     segment.sweeps.quarter_chord  = 0. * Units.degrees
     segment.thickness_to_chord    = 0.15
@@ -384,8 +365,10 @@ def vehicle_setup():
     net.thrust_angle_lift         = 0.0 * Units.degrees
     net.thrust_angle_forward      = 0.0 * Units.degrees
     net.voltage           = 461
-    #net.areas             = Data()
-    #net.areas.wetted      = 1.1*np.pi*net.nacelle_diameter*net.engine_length
+    net.areas_forward             = Data()
+    net.areas_forward.wetted      = 1.1*np.pi*net.nacelle_diameter_forward*net.engine_length_forward
+    net.areas_lift             = Data()
+    net.areas_lift.wetted      = 1.1*np.pi*net.nacelle_diameter_forward*net.engine_length_lift
     
     
     # Component 1 - Tip ESC 
@@ -450,7 +433,7 @@ def vehicle_setup():
     motor.propeller_Cp         = prop_forward.prop_attributes.Cp
     motor.gear_ratio           = 12. # Gear ratio
     motor.gearbox_efficiency   = .98 # Gear box efficiency
-    motor.expected_current     = 160. # Expected current
+    motor.expected_current     = 285. # Expected current
     motor.mass_properties.mass = 9.0  * Units.kg
     net.motor_forward          = motor
     
@@ -464,7 +447,7 @@ def vehicle_setup():
     motor.propeller_Cp         = prop_lift.prop_attributes.Cp
     motor.gear_ratio           = 12. # Gear ratio
     motor.gearbox_efficiency   = .98 # Gear box efficiency
-    motor.expected_current     = 160. # Expected current
+    motor.expected_current     = 285. # Expected current
     motor.mass_properties.mass = 6.0  * Units.kg
     net.motor_lift             = motor
     
@@ -625,27 +608,29 @@ def mission_setup(analyses,vehicle):
     # unpack Segments module
     Segments = SUAVE.Analyses.Mission.Segments
     
+    
     # no lifting motors segment
     no_lift_segment = Segments.Segment()   
     ones_row     = no_lift_segment.state.ones_row
     no_lift_segment.process.iterate.unknowns.network  = vehicle.base.propulsors.propulsor.unpack_unknowns_no_lift
     no_lift_segment.process.iterate.residuals.network = vehicle.base.propulsors.propulsor.residuals_no_lift
-    no_lift_segment.state.unknowns.battery_voltage_under_load   = vehicle.propulsors.network.battery.max_voltage * ones_row(1)    
+    no_lift_segment.state.unknowns.battery_voltage_under_load   = vehicle.base.propulsors.propulsor.battery.max_voltage * ones_row(1)    
     no_lift_segment.process.iterate.initials.initialize_battery = SUAVE.Methods.Missions.Segments.Common.Energy.initialize_battery
-    no_lift_segment.state.residuals.network           = 0. * ones_row(1)
+    no_lift_segment.state.unknowns.propeller_power_coefficient  = vehicle.base.propulsors.propulsor.propeller_forward.prop_attributes.Cp  * ones_row(1)/15.
+    no_lift_segment.state.residuals.network           = 0. * ones_row(2)
     
     
     segment = SUAVE.Analyses.Mission.Segments.Cruise.Constant_Speed_Constant_Altitude(no_lift_segment)
-    segment.tag = "cruise1"
+    segment.tag = "cruise"
     
     # connect vehicle configuration
     segment.analyses.extend(analyses.cruise)
     
     # segment attributes     
     segment.state.numerics.number_control_points = 16
-    segment.altitude       = 2000 * Units.meter
-    segment.air_speed  = 30. * Units.knots
-    segment.distance       = 25 * Units.nautical_miles
+    segment.altitude       = 2438.400 * Units.meter
+    segment.air_speed  = 118. * Units.knots
+    segment.distance       = 50 * Units.nautical_miles
     
     mission.append_segment(segment)    
     
@@ -824,11 +809,14 @@ def plot_mission(results):
     #   Current Draw
     # ------------------------------------------------------------------
     plt.figure("Current Draw")
-    axes = plt.gca()    
+    axes = plt.gca()   
     for i in range(len(results.segments)):     
         time     = results.segments[i].conditions.frames.inertial.time[:,0] / Units.min
-        energy = results.segments[i].conditions.propulsion.current[:,0] 
-        axes.plot(time, energy, 'bo-')
+        energy_lift = results.segments[i].conditions.propulsion.current_lift[:,0]
+        energy_forward = results.segments[i].conditions.propulsion.current_forward[:,0]
+        axes.plot(time, energy_lift, 'ko-', label='HL Propellers')
+        axes.plot(time, energy_forward, 'bo-', label='Cruise Propellers')
+        
     axes.set_xlabel('Time (mins)')
     axes.set_ylabel('Current Draw (Amps)')
     axes.get_yaxis().get_major_formatter().set_scientific(False)
@@ -843,8 +831,10 @@ def plot_mission(results):
     axes = plt.gca()    
     for i in range(len(results.segments)):     
         time     = results.segments[i].conditions.frames.inertial.time[:,0] / Units.min
-        energy = results.segments[i].conditions.propulsion.rpm[:,0] 
-        axes.plot(time, energy, 'bo-')
+        energy_lift = results.segments[i].conditions.propulsion.rpm_lift[:,0]
+        energy_forward = results.segments[i].conditions.propulsion.rpm_forward[:,0]
+        axes.plot(time, energy_lift, 'ko-', label='HL Propellers')
+        axes.plot(time, energy_forward, 'ko-', label='Cruise Propellers')
     axes.set_xlabel('Time (mins)')
     axes.set_ylabel('Motor RPM')
     axes.get_yaxis().get_major_formatter().set_scientific(False)
@@ -856,7 +846,7 @@ def plot_mission(results):
     #   Battery Draw
     # ------------------------------------------------------------------
     plt.figure("Battery Charging")
-    axes = plt.gca()    
+    axes = plt.gca()
     for i in range(len(results.segments)):     
         time     = results.segments[i].conditions.frames.inertial.time[:,0] / Units.min
         energy = results.segments[i].conditions.propulsion.battery_draw[:,0] 
