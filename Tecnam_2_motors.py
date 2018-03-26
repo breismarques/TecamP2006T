@@ -615,15 +615,14 @@ def mission_setup(analyses,vehicle):
     
     no_lift_segment.state.unknowns.lift_throttle                    = 0.8   * ones_row(1)
     no_lift_segment.state.unknowns.propeller_power_coefficient_lift = 0.01 * ones_row(1)
-    no_lift_segment.state.unknowns.__delitem__('propeller_power_coefficient')
+    no_lift_segment.state.unknowns.propeller_power_coefficient  = vehicle.base.propulsors.propulsor.propeller_forward.prop_attributes.Cp  * ones_row(1)/15.
+    #no_lift_segment.state.unknowns.__delitem__('propeller_power_coefficient')
     
     no_lift_segment.process.iterate.unknowns.network  = vehicle.base.propulsors.propulsor.unpack_unknowns_no_lift
     no_lift_segment.process.iterate.residuals.network = vehicle.base.propulsors.propulsor.residuals_no_lift
     no_lift_segment.state.unknowns.battery_voltage_under_load   = vehicle.base.propulsors.propulsor.battery.max_voltage * ones_row(1)    
     no_lift_segment.process.iterate.initials.initialize_battery = SUAVE.Methods.Missions.Segments.Common.Energy.initialize_battery
-    no_lift_segment.state.unknowns.propeller_power_coefficient  = vehicle.base.propulsors.propulsor.propeller_forward.prop_attributes.Cp  * ones_row(1)/15.
     no_lift_segment.state.residuals.network           = 0. * ones_row(2)
-    
     
     segment = SUAVE.Analyses.Mission.Segments.Cruise.Constant_Speed_Constant_Altitude(no_lift_segment)
     segment.tag = "cruise"
