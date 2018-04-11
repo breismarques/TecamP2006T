@@ -398,7 +398,7 @@ def vehicle_setup():
     
     prop_attributes                     = propeller_design(prop_attributes)
     
-    prop_forward = SUAVE.Components.Energy.Converters.Propeller_variable_pitch()
+    prop_forward = SUAVE.Components.Energy.Converters.Propeller()
     prop_forward.prop_attributes = prop_attributes
     net.propeller_forward = prop_forward
     
@@ -419,7 +419,7 @@ def vehicle_setup():
     
     prop_attributes                     = propeller_design(prop_attributes)
     
-    prop_lift = SUAVE.Components.Energy.Converters.Propeller_variable_pitch()
+    prop_lift = SUAVE.Components.Energy.Converters.Propeller()
     prop_lift.prop_attributes = prop_attributes
     net.propeller_lift = prop_lift
     
@@ -468,6 +468,7 @@ def vehicle_setup():
     bat.specific_energy      = 192.84 * Units.Wh/Units.kg
     bat.specific_power       = 0.837 * Units.kW/Units.kg
     bat.resistance           = 0.05
+    bat.max_voltage          = 4.2
     initialize_from_mass(bat,bat.mass_properties.mass)
     net.battery              = bat
    
@@ -637,6 +638,7 @@ def mission_setup(analyses,vehicle):
     segment.altitude       = 2438.400 * Units.meter
     segment.air_speed  = 118. * Units.knots
     segment.distance       = 50 * Units.nautical_miles
+    segment.battery_energy = vehicle.base.propulsors.propulsor.battery.max_energy*0.2
     
     mission.append_segment(segment)    
     
