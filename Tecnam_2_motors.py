@@ -96,7 +96,7 @@ def base_analysis(vehicle):
     
     # ------------------------------------------------------------------
     #  Weights
-    weights = SUAVE.Analyses.Weights.Weights_UAV()
+    weights = SUAVE.Analyses.Weights.Weights_Tube_Wing()
     weights.settings.empty_weight_method = \
         SUAVE.Methods.Weights.Correlations.Human_Powered.empty
     weights.vehicle = vehicle
@@ -107,6 +107,7 @@ def base_analysis(vehicle):
     aerodynamics = SUAVE.Analyses.Aerodynamics.Fidelity_Zero()
     aerodynamics.geometry = vehicle
     aerodynamics.settings.drag_coefficient_increment = 0.0000
+    #aerodynamics.settings.maximum_lift_coefficient = np.inf
     analyses.append(aerodynamics)
     
     # ------------------------------------------------------------------
@@ -149,7 +150,7 @@ def vehicle_setup():
     # mass properties
     vehicle.mass_properties.max_takeoff               = 1400* Units.kilogram 
     vehicle.mass_properties.takeoff                   = 1400 * Units.kilogram   
-    vehicle.mass_properties.operating_empty           = 819 * Units.kilogram 
+    vehicle.mass_properties.operating_empty           = 1000 * Units.kilogram 
     vehicle.mass_properties.max_zero_fuel             = 1400 * Units.kilogram 
     vehicle.mass_properties.cargo                     = 80  * Units.kilogram   
     
@@ -179,6 +180,41 @@ def vehicle_setup():
     landing_gear.main_wheels = 1    #number of wheels on the main landing gear
     landing_gear.nose_wheels = 1    #number of wheels on the nose landing gear      
     vehicle.landing_gear = landing_gear
+    
+    # ------------------------------------------------------------------
+    #  Fuselage
+    # ------------------------------------------------------------------
+    
+    fuselage = SUAVE.Components.Fuselages.Fuselage()    
+    fuselage.tag = 'fuselage'
+    
+    fuselage.number_coach_seats    = vehicle.passengers
+    fuselage.seats_abreast         = 2
+    fuselage.seat_pitch            = 0.995     * Units.meter
+    fuselage.fineness.nose         = 1.27
+    fuselage.fineness.tail         = 1  #3.31
+    fuselage.lengths.nose          = 1.16  * Units.meter
+    fuselage.lengths.tail          = 4.637 * Units.meter
+    fuselage.lengths.cabin         = 2.653 * Units.meter
+    fuselage.lengths.total         = 8.45 * Units.meter
+    fuselage.lengths.fore_space    =  0.0   * Units.meter
+    fuselage.lengths.aft_space     =  0.0   * Units.meter
+    fuselage.width                 = 1.22  * Units.meter
+    fuselage.heights.maximum       = 1.41  * Units.meter
+    fuselage.effective_diameter    =  2 * Units.meter
+    fuselage.areas.side_projected  = 7.46  * Units['meters**2'] 
+    fuselage.areas.wetted          = 25.0  * Units['meters**2'] 
+    fuselage.areas.front_projected = 1.54 * Units['meters**2'] 
+    fuselage.differential_pressure = 0.0 * Units.pascal # Maximum differential pressure
+    
+    fuselage.heights.at_quarter_length          = 1.077 * Units.meter
+    fuselage.heights.at_three_quarters_length   =  0.5 * Units.meter   #0.621 * Units.meter
+    fuselage.heights.at_wing_root_quarter_chord = 1.41  * Units.meter
+   
+    
+    # add to vehicle
+    vehicle.append_component(fuselage)
+
 
     # ------------------------------------------------------------------        
     #   Main Wing
@@ -187,20 +223,20 @@ def vehicle_setup():
     wing = SUAVE.Components.Wings.Main_Wing()
     wing.tag = 'main_wing'
     
-    wing.aspect_ratio            = 15.0
-    wing.thickness_to_chord      = 0.15
-    wing.taper                   = 0.7016
-    wing.span_efficiency         = 0.9564
-    wing.spans.projected         = 9.631680 * Units.meter
-    wing.chords.root             = 0.7559040 * Units.meter
-    wing.chords.tip              = 0.5303520 * Units.meter
+    wing.thickness_to_chord      = 0.2
+    wing.taper                   = 0.9
+    wing.spans.projected         = 13.8 * Units.meter
+    wing.chords.root             = 5.2 * Units.meter
+    wing.chords.tip              = wing.chords.root*wing.taper
     wing.chords.mean_aerodynamic = 0.6 * Units.meter
-    wing.areas.reference         = 6.196633 * Units['meters**2']  
-    wing.twists.root             = 0 * Units.degrees
-    wing.twists.tip              = 0 * Units.degrees
-    wing.dihedral= 1 * Units.degrees
+    wing.areas.reference         = (wing.chords.root+wing.chords.tip)*wing.spans.projected/2  
+    wing.twists.root             = 0. * Units.degrees
+    wing.twists.tip              = 0. * Units.degrees
+    wing.dihedral= 1. * Units.degrees
     wing.origin                  = [2.986,0,1.077] # meters
-    wing.sweeps.leading_edge  = 1.9 * Units.deg
+    wing.sweeps.leading_edge     = 1.9 * Units.deg
+    wing.aspect_ratio            = (wing.spans.projected*wing.spans.projected)/wing.areas.reference
+    wing.span_efficiency         = 0.99*(1-0.0407*(fuselage.width/wing.spans.projected)-1.792*((fuselage.width/wing.spans.projected)**2))
     wing.vertical                = False
     wing.symmetric               = True
     wing.high_lift               = True
@@ -211,40 +247,40 @@ def vehicle_setup():
     
     # Root Segment
     
-    segment = SUAVE.Components.Wings.Segment()
+    #segment = SUAVE.Components.Wings.Segment()
     
-    segment.tag                   = 'root'
-    segment.percent_span_location = 0.0
-    segment.twist                 = 0. * Units.deg
-    segment.root_chord_percent    = 1.
-    segment.dihedral_outboard     = 1. * Units.degrees
-    segment.sweeps.quarter_chord  = 0. * Units.degrees
-    segment.thickness_to_chord    = 0.15
+    #segment.tag                   = 'root'
+    #segment.percent_span_location = 0.0
+    #segment.twist                 = 0. * Units.deg
+    #segment.root_chord_percent    = 1.
+    #segment.dihedral_outboard     = 1. * Units.degrees
+    #segment.sweeps.quarter_chord  = 0. * Units.degrees
+    #segment.thickness_to_chord    = 0.15
     
-    airfoil = SUAVE.Components.Wings.Airfoils.Airfoil()
-    airfoil.coordinate_file       = '/Users/Bruno/Documents/Delft/Courses/2016-2017/Thesis/Code/Airfoils/naca642415.dat'
+    #airfoil = SUAVE.Components.Wings.Airfoils.Airfoil()
+    #airfoil.coordinate_file       = '/Users/Bruno/Documents/Delft/Courses/2016-2017/Thesis/Code/Airfoils/naca642415.dat'
     
-    segment.append_airfoil(airfoil)
-    wing.Segments.append(segment)
+    #segment.append_airfoil(airfoil)
+    #wing.Segments.append(segment)
     
     
     # Tip Segment
     
-    segment = SUAVE.Components.Wings.Segment()
+    #segment = SUAVE.Components.Wings.Segment()
     
-    segment.tag                   = 'tip'
-    segment.percent_span_location = 1.0
-    segment.twist                 = 0. * Units.deg
-    segment.root_chord_percent    = 1.
-    segment.dihedral_outboard     = 1. * Units.degrees
-    segment.sweeps.quarter_chord  = 0. * Units.degrees
-    segment.thickness_to_chord    = 0.15
+    #segment.tag                   = 'tip'
+    #segment.percent_span_location = 1.0
+    #segment.twist                 = 0. * Units.deg
+    #segment.root_chord_percent    = 1.
+    #segment.dihedral_outboard     = 1. * Units.degrees
+    #segment.sweeps.quarter_chord  = 0. * Units.degrees
+    #segment.thickness_to_chord    = 0.15
     
-    airfoil = SUAVE.Components.Wings.Airfoils.Airfoil()
-    airfoil.coordinate_file       = '/Users/Bruno/Documents/Delft/Courses/2016-2017/Thesis/Code/Airfoils/naca642415.dat'
+    #airfoil = SUAVE.Components.Wings.Airfoils.Airfoil()
+    #airfoil.coordinate_file       = '/Users/Bruno/Documents/Delft/Courses/2016-2017/Thesis/Code/Airfoils/naca642415.dat'
     
-    segment.append_airfoil(airfoil)  
-    wing.Segments.append(segment)
+    #segment.append_airfoil(airfoil)  
+    #wing.Segments.append(segment)
     
     # ------------------------------------------------------------------
     #   Flaps
@@ -297,7 +333,7 @@ def vehicle_setup():
     wing.aspect_ratio            = 1.407
     wing.sweeps.quarter_chord    = 38.75 * Units.deg
     wing.thickness_to_chord      = 0.12
-    wing.taper                   = 0.414
+    wing.taper                   = 1.0
     wing.span_efficiency         = -0.107
     wing.spans.projected         = 1.574 * Units.meter
     wing.chords.root             = 1.2 * Units.meter
@@ -316,40 +352,6 @@ def vehicle_setup():
     vehicle.append_component(wing)
 
     # ------------------------------------------------------------------
-    #  Fuselage
-    # ------------------------------------------------------------------
-    
-    fuselage = SUAVE.Components.Fuselages.Fuselage()    
-    fuselage.tag = 'fuselage'
-    
-    fuselage.number_coach_seats    = vehicle.passengers
-    fuselage.seats_abreast         = 2
-    fuselage.seat_pitch            = 0.995     * Units.meter
-    fuselage.fineness.nose         = 1.27
-    fuselage.fineness.tail         = 1  #3.31
-    fuselage.lengths.nose          = 1.16  * Units.meter
-    fuselage.lengths.tail          = 4.637 * Units.meter
-    fuselage.lengths.cabin         = 2.653 * Units.meter
-    fuselage.lengths.total         = 8.45 * Units.meter
-    fuselage.lengths.fore_space    =  0.0   * Units.meter
-    fuselage.lengths.aft_space     =  0.0   * Units.meter
-    fuselage.width                 = 1.22  * Units.meter
-    fuselage.heights.maximum       = 1.41  * Units.meter
-    fuselage.effective_diameter    =  2 * Units.meter
-    fuselage.areas.side_projected  = 7.46  * Units['meters**2'] 
-    fuselage.areas.wetted          = 25.0  * Units['meters**2'] 
-    fuselage.areas.front_projected = 1.54 * Units['meters**2'] 
-    fuselage.differential_pressure = 0.0 * Units.pascal # Maximum differential pressure
-    
-    fuselage.heights.at_quarter_length          = 1.077 * Units.meter
-    fuselage.heights.at_three_quarters_length   =  0.5 * Units.meter   #0.621 * Units.meter
-    fuselage.heights.at_wing_root_quarter_chord = 1.41  * Units.meter
-   
-    
-    # add to vehicle
-    vehicle.append_component(fuselage)
-
-    # ------------------------------------------------------------------
     #  Propellers Powered By Batteries
     # ------------------------------------------------------------------    
     
@@ -360,11 +362,11 @@ def vehicle_setup():
     net.nacelle_diameter_forward  = 0.1732 * Units.meters
     net.engine_length_lift        = 0.47244 * Units.meters
     net.engine_length_forward     = 1.2 * Units.meters
-    net.number_of_engines_lift    = 12.0
-    net.number_of_engines_forward = 2.0
+    net.number_of_engines_lift    = 12
+    net.number_of_engines_forward = 2
     net.thrust_angle_lift         = 0.0 * Units.degrees
     net.thrust_angle_forward      = 0.0 * Units.degrees
-    net.voltage           = 461
+    net.voltage           = 461.
     net.areas_forward             = Data()
     net.areas_forward.wetted      = 1.1*np.pi*net.nacelle_diameter_forward*net.engine_length_forward
     net.areas_lift             = Data()
@@ -386,14 +388,14 @@ def vehicle_setup():
     # Design the Propeller
     prop_attributes = Data()
     prop_attributes.number_blades       = 3.0
-    prop_attributes.freestream_velocity = 1. * Units['m/s'] # freestream m/s
-    prop_attributes.angular_velocity    = 2750 * Units['rpm'] # For 20x10 prop
+    prop_attributes.freestream_velocity = 50.0 * Units['m/s'] # freestream m/s
+    prop_attributes.angular_velocity    = 27500. * Units['rpm'] # For 20x10 prop
     prop_attributes.tip_radius          = 0.762 * Units.meter
     prop_attributes.hub_radius          = 0.085 * Units.meter
     prop_attributes.design_Cl           = 0.8
-    prop_attributes.design_altitude     = 0.0 * Units.meter
-    prop_attributes.design_thrust       = 0.0
-    prop_attributes.design_power        = 60000. * Units.watts 
+    prop_attributes.design_altitude     = 14.0 * Units.km
+    prop_attributes.design_thrust       = 0.0 * Units.newton
+    prop_attributes.design_power        = 250000. * Units.watts 
     
     
     prop_attributes                     = propeller_design(prop_attributes)
@@ -413,7 +415,7 @@ def vehicle_setup():
     prop_attributes.hub_radius          = 0.07772400 * Units.meter
     prop_attributes.design_Cl           = 0.8
     prop_attributes.design_altitude     = 0.0 * Units.meter
-    prop_attributes.design_thrust       = 0.0
+    prop_attributes.design_thrust       = 0.0 * Units.newton
     prop_attributes.design_power        = 10000. * Units.watts 
     
     
@@ -426,14 +428,14 @@ def vehicle_setup():
     # Component 3 - Tip Motor
     
     motor = SUAVE.Components.Energy.Converters.Motor()
-    motor.resistance           = 0.008
-    motor.no_load_current      = 4.5  * Units.ampere
-    motor.speed_constant       = 5800. * Units['rpm'] # RPM/volt converted to (rad/s)/volt    
+    motor.resistance           = 1.
+    motor.no_load_current      = 7.  * Units.ampere
+    motor.speed_constant       = 11.9999 * Units['rpm/volt'] # RPM/volt converted to (rad/s)/volt    
     motor.propeller_radius     = prop_forward.prop_attributes.tip_radius
-    motor.propeller_Cp         = prop_forward.prop_attributes.Cp
+    motor.propeller_Cp         = prop_forward.prop_attributes.Cp[0]
     motor.gear_ratio           = 12. # Gear ratio
     motor.gearbox_efficiency   = .98 # Gear box efficiency
-    motor.expected_current     = 285. # Expected current
+    motor.expected_current     = 160. # Expected current
     motor.mass_properties.mass = 9.0  * Units.kg
     net.motor_forward          = motor
     
@@ -442,12 +444,12 @@ def vehicle_setup():
     motor = SUAVE.Components.Energy.Converters.Motor()
     motor.resistance           = 0.008
     motor.no_load_current      = 4.5  * Units.ampere
-    motor.speed_constant       = 5800. * Units['rpm'] # RPM/volt converted to (rad/s)/volt    
+    motor.speed_constant       = 5800. * Units['rpm/volt'] # RPM/volt converted to (rad/s)/volt
     motor.propeller_radius     = prop_lift.prop_attributes.tip_radius
-    motor.propeller_Cp         = prop_lift.prop_attributes.Cp
+    motor.propeller_Cp         = prop_lift.prop_attributes.Cp[0]
     motor.gear_ratio           = 12. # Gear ratio
     motor.gearbox_efficiency   = .98 # Gear box efficiency
-    motor.expected_current     = 285. # Expected current
+    motor.expected_current     = 25. # Expected current
     motor.mass_properties.mass = 6.0  * Units.kg
     net.motor_lift             = motor
     
@@ -467,8 +469,8 @@ def vehicle_setup():
     bat.mass_properties.mass = 358.33 * Units.kg
     bat.specific_energy      = 192.84 * Units.Wh/Units.kg
     bat.specific_power       = 0.837 * Units.kW/Units.kg
-    bat.resistance           = 0.05
-    bat.max_voltage          = 4.2
+    bat.resistance           = 0.0153
+    bat.max_voltage          = 10000.
     initialize_from_mass(bat,bat.mass_properties.mass)
     net.battery              = bat
    
@@ -602,6 +604,45 @@ def mission_setup(analyses,vehicle):
     mission.planet      = SUAVE.Attributes.Planets.Earth()
     
     
+    # ------------------------------------------------------------------
+    #   First Climb Segment: Constant Speed, Constant Rate
+    # ------------------------------------------------------------------
+    
+    # unpack Segments module
+    #Segments = SUAVE.Analyses.Mission.Segments
+    
+    # all motors segment
+    #all_motors_segment = Segments.Segment()   
+    #ones_row     = all_motors_segment.state.ones_row
+    
+    
+    #all_motors_segment.state.unknowns.lift_throttle                    = 0.8   * ones_row(1)
+    #all_motors_segment.state.unknowns.propeller_power_coefficient_lift = 0.01 * ones_row(1)
+    #all_motors_segment.state.unknowns.propeller_power_coefficient  = vehicle.base.propulsors.propulsor.propeller_forward.prop_attributes.Cp  * ones_row(1)
+    #all_motors_segment.state.unknowns.battery_voltage_under_load   = vehicle.base.propulsors.propulsor.battery.max_voltage * ones_row(1)
+    
+    #all_motors_segment.process.iterate.unknowns.network  = vehicle.base.propulsors.propulsor.unpack_unknowns
+    #all_motors_segment.process.iterate.residuals.network = vehicle.base.propulsors.propulsor.residuals   
+    #all_motors_segment.process.iterate.initials.initialize_battery = SUAVE.Methods.Missions.Segments.Common.Energy.initialize_battery
+    #all_motors_segment.state.residuals.network           = 0. * ones_row(4)
+
+    #segment = Segments.Climb.Constant_Speed_Constant_Rate(all_motors_segment)
+    #segment.tag = "climb_1"
+
+    #segment.analyses.extend( analyses.takeoff )
+
+    
+    #segment.state.numerics.number_control_points = 16
+    #segment.altitude_start = 0.0   * Units.meter
+    #segment.altitude_end   = 100   * Units.meter
+    #segment.air_speed      = 64 * Units.knots
+    #segment.climb_rate     = 0.5  * Units['m/s']
+    #segment.battery_energy = vehicle.base.propulsors.propulsor.battery.max_energy*0.2
+
+    # add to misison
+    #mission.append_segment(segment)
+    
+    
     # ------------------------------------------------------------------    
     #   Cruise Segment: constant speed, constant altitude
     # ------------------------------------------------------------------  
@@ -617,7 +658,7 @@ def mission_setup(analyses,vehicle):
     
     no_lift_segment.state.unknowns.lift_throttle                    = 0.8   * ones_row(1)
     no_lift_segment.state.unknowns.propeller_power_coefficient_lift = 0.01 * ones_row(1)
-    no_lift_segment.state.unknowns.propeller_power_coefficient  = vehicle.base.propulsors.propulsor.propeller_forward.prop_attributes.Cp  * ones_row(1)
+    no_lift_segment.state.unknowns.propeller_power_coefficient  = vehicle.base.propulsors.propulsor.propeller_forward.prop_attributes.Cp[0]  * ones_row(1)
     no_lift_segment.state.unknowns.battery_voltage_under_load   = vehicle.base.propulsors.propulsor.battery.max_voltage * ones_row(1)
     no_lift_segment.state.unknowns.__delitem__('propeller_power_coefficient_lift')
     no_lift_segment.state.unknowns.__delitem__('lift_throttle')
@@ -635,10 +676,10 @@ def mission_setup(analyses,vehicle):
     
     # segment attributes     
     segment.state.numerics.number_control_points = 16
-    segment.altitude       = 2438.400 * Units.meter
-    segment.air_speed  = 118. * Units.knots
-    segment.distance       = 50 * Units.nautical_miles
-    segment.battery_energy = vehicle.base.propulsors.propulsor.battery.max_energy*0.2
+    segment.altitude       = 1000. * Units.meter
+    segment.air_speed  = 70. * Units.knots
+    segment.distance       = 25. * Units.nautical_miles
+    segment.battery_energy = vehicle.base.propulsors.propulsor.battery.max_energy
     
     mission.append_segment(segment)    
     
@@ -731,7 +772,7 @@ def plot_mission(results):
         axes.set_ylabel('Thrust (N)')
         axes.get_yaxis().get_major_formatter().set_scientific(False)
         axes.get_yaxis().get_major_formatter().set_useOffset(False)  
-        plt.ylim((0,50))
+        plt.ylim((-10,2500))
         axes.grid(True)
         
     # ------------------------------------------------------------------    
@@ -787,11 +828,11 @@ def plot_mission(results):
         cdm = drag_breakdown.miscellaneous.total[:,0]
         cd  = drag_breakdown.total[:,0]
         
-        axes.plot( time , cdp , 'ko-', label='CD_P' )
-        axes.plot( time , cdi , 'bo-', label='CD_I' )
-        axes.plot( time , cdc , 'go-', label='CD_C' )
-        axes.plot( time , cdm , 'yo-', label='CD_M' )
-        axes.plot( time , cd  , 'ro-', label='CD'   )
+        axes.plot( time , cdp , 'ko-', label='CD_parasite' )
+        axes.plot( time , cdi , 'bo-', label='CD_induced' )
+        axes.plot( time , cdc , 'go-', label='CD_compressible' )
+        axes.plot( time , cdm , 'yo-', label='CD_miscellaneous' )
+        axes.plot( time , cd  , 'ro-', label='CD_total'   )
         
         if i == 0:
             axes.legend(loc='upper center')
@@ -824,12 +865,14 @@ def plot_mission(results):
         energy_forward = results.segments[i].conditions.propulsion.current_forward[:,0]
         axes.plot(time, energy_lift, 'ko-', label='HL Propellers')
         axes.plot(time, energy_forward, 'bo-', label='Cruise Propellers')
+        if i == 0:
+            axes.legend(loc='upper center')
         
     axes.set_xlabel('Time (mins)')
     axes.set_ylabel('Current Draw (Amps)')
     axes.get_yaxis().get_major_formatter().set_scientific(False)
     axes.get_yaxis().get_major_formatter().set_useOffset(False)   
-    plt.ylim((0,200))
+    plt.ylim((0,500))
     axes.grid(True)  
     
     # ------------------------------------------------------------------    
@@ -842,13 +885,16 @@ def plot_mission(results):
         energy_lift = results.segments[i].conditions.propulsion.rpm_lift[:,0]
         energy_forward = results.segments[i].conditions.propulsion.rpm_forward[:,0]
         axes.plot(time, energy_lift, 'ko-', label='HL Propellers')
-        axes.plot(time, energy_forward, 'ko-', label='Cruise Propellers')
+        axes.plot(time, energy_forward, 'bo-', label='Cruise Propellers')
+        if i == 0:
+            axes.legend(loc='upper center')
     axes.set_xlabel('Time (mins)')
     axes.set_ylabel('Motor RPM')
     axes.get_yaxis().get_major_formatter().set_scientific(False)
     axes.get_yaxis().get_major_formatter().set_useOffset(False) 
-    plt.ylim((0,200))
+    plt.ylim((0,1800))
     axes.grid(True)
+    
     
     # ------------------------------------------------------------------    
     #   Battery Draw
@@ -879,7 +925,7 @@ def plot_mission(results):
     axes.get_yaxis().get_major_formatter().set_scientific(False)
     axes.get_yaxis().get_major_formatter().set_useOffset(False)      
     axes.grid(True)      
-    plt.ylim((0,1))
+    plt.ylim((-20,35))
 
     # ------------------------------------------------------------------
     #   Flight Conditions
@@ -934,7 +980,26 @@ def plot_mission(results):
         axes.plot( time , energy , 'bo-' )
         axes.set_xlabel('Time (min)')
         axes.set_ylabel('Battery Energy (MJ)')
-        axes.grid(True)        
+        axes.grid(True)  
+        
+    # ------------------------------------------------------------------
+    #   Altitude, Vehicle Weight, Mach Number
+    # ------------------------------------------------------------------
+
+
+    line_style='bo-'
+    axis_font = {'fontname':'Arial', 'size':'14'}
+    fig = plt.figure("Altitude_sfc_weight",figsize=(8,10))
+    for segment in results.segments.values():
+
+        time     = segment.conditions.frames.inertial.time[:,0] / Units.min
+        mass     = segment.conditions.weights.total_mass[:,0] / Units.kg
+        
+        
+        axes = fig.add_subplot(3,1,2)
+        axes.plot( time , mass , 'ro-' )
+        axes.set_ylabel('Weight (kg)',axis_font)
+        axes.grid(True)
     
     return     
 if __name__ == '__main__': 
