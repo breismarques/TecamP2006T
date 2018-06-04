@@ -668,18 +668,17 @@ def mission_setup(analyses,vehicle):
     no_lift_segment.process.iterate.initials.initialize_battery = SUAVE.Methods.Missions.Segments.Common.Energy.initialize_battery
     no_lift_segment.state.residuals.network           = 0. * ones_row(2)
     
-    segment = SUAVE.Analyses.Mission.Segments.Cruise.Constant_Speed_Constant_Altitude(no_lift_segment)
+    segment = SUAVE.Analyses.Mission.Segments.Single_Point.Set_Speed_Set_Altitude(no_lift_segment)
     segment.tag = "cruise"
     
     # connect vehicle configuration
     segment.analyses.extend(analyses.cruise)
     
-    # segment attributes     
-    segment.state.numerics.number_control_points = 16
+    # segment attributes
     segment.altitude       = 1000. * Units.meter
     segment.air_speed  = 70. * Units.knots
     segment.distance       = 25. * Units.nautical_miles
-    segment.battery_energy = vehicle.base.propulsors.propulsor.battery.max_energy
+    #segment.battery_energy = vehicle.base.propulsors.propulsor.battery.max_energy
     
     mission.append_segment(segment)    
     
