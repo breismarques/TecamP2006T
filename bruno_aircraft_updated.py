@@ -112,18 +112,18 @@ def base_analysis(vehicle):
     analyses.append(weights)
     
     # ------------------------------------------------------------------
+    #  Energy
+    energy = SUAVE.Analyses.Energy.Energy()
+    energy.network = vehicle.propulsors #what is called throughout the mission (at every time step))
+    analyses.append(energy)
+    
+    # ------------------------------------------------------------------
     #  Aerodynamics Analysis
     aerodynamics = SUAVE.Analyses.Aerodynamics.Open_VSP_Analysis()
     aerodynamics.geometry = vehicle
     aerodynamics.settings.drag_coefficient_increment = 0.0000
     #aerodynamics.settings.maximum_lift_coefficient = np.inf
     analyses.append(aerodynamics)
-    
-    # ------------------------------------------------------------------
-    #  Energy
-    energy = SUAVE.Analyses.Energy.Energy()
-    energy.network = vehicle.propulsors #what is called throughout the mission (at every time step))
-    analyses.append(energy)
     
     # ------------------------------------------------------------------
     #  Planet Analysis
@@ -677,7 +677,7 @@ def mission_setup(analyses,vehicle):
     no_lift_segment.process.iterate.initials.initialize_battery = SUAVE.Methods.Missions.Segments.Common.Energy.initialize_battery
     no_lift_segment.state.residuals.network           = 0. * ones_row(4)
 
-    segment = Segments.Climb.Constant_Speed_Constant_Rate(no_lift_segment)
+    segment = Segments.Climb.Constant_Speed_Constant_Rate_VSP(no_lift_segment)
     segment.tag = "climb_1"
 
     segment.analyses.extend(analyses.takeoff)
@@ -700,7 +700,7 @@ def mission_setup(analyses,vehicle):
     # unpack Segments module
     Segments = SUAVE.Analyses.Mission.Segments
 
-    segment = Segments.Climb.Constant_Speed_Constant_Rate(no_lift_segment)
+    segment = Segments.Climb.Constant_Speed_Constant_Rate_VSP(no_lift_segment)
     segment.tag = "climb_2"
 
     segment.analyses.extend(analyses.base)
@@ -741,7 +741,7 @@ def mission_setup(analyses,vehicle):
     #no_lift_segment.process.iterate.initials.initialize_battery = SUAVE.Methods.Missions.Segments.Common.Energy.initialize_battery
     no_lift_segment.state.residuals.network           = 0. * ones_row(2)
     
-    segment = SUAVE.Analyses.Mission.Segments.Cruise.Constant_Speed_Constant_Altitude(no_lift_segment)
+    segment = SUAVE.Analyses.Mission.Segments.Cruise.Constant_Speed_Constant_Altitude_VSP(no_lift_segment)
     segment.tag = "cruise"
     
     # connect vehicle configuration
@@ -778,7 +778,7 @@ def mission_setup(analyses,vehicle):
     #no_lift_segment.process.iterate.initials.initialize_battery = SUAVE.Methods.Missions.Segments.Common.Energy.initialize_battery
     no_lift_segment.state.residuals.network           = 0. * ones_row(4)
 
-    segment = Segments.Descent.Constant_Speed_Constant_Rate(no_lift_segment)
+    segment = Segments.Descent.Constant_Speed_Constant_Rate_VSP(no_lift_segment)
     segment.tag = "descent_1"
 
     segment.analyses.extend(analyses.base)
@@ -800,7 +800,7 @@ def mission_setup(analyses,vehicle):
     # unpack Segments module
     Segments = SUAVE.Analyses.Mission.Segments
 
-    segment = Segments.Descent.Constant_Speed_Constant_Rate(no_lift_segment)
+    segment = Segments.Descent.Constant_Speed_Constant_Rate_VSP(no_lift_segment)
     segment.tag = "descent_2"
 
     segment.analyses.extend(analyses.landing)
