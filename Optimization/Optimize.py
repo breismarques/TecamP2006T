@@ -127,7 +127,7 @@ def setup():
         [ 'descent1_rate'            ,  'missions.mission.segments.descent_1.descent_rate'               ],
         [ 'descent2_rate'            ,  'missions.mission.segments.descent_2.descent_rate'               ],
         [ 'voltage'            ,  'vehicle_configurations.*.propulsors.propulsor.voltage'               ],
-        [ 'range'            ,                 ],
+        [ 'range'            ,    'nexus.missions.mission.total_range'            ],
         [ 'battery_mass'            , 'vehicle_configurations.base.propulsors.network.battery.mass_properties.mass'                ],
         [ 'Throttle_min'            ,   'summary.throttle_min'              ],
         [ 'Throttle_max'            ,   'summary.throttle_max'              ],

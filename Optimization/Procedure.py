@@ -78,8 +78,12 @@ def find_target_range(nexus,mission):
     x_descent_2 = (descent_1.altitude_end-descent_2.altitude_end)/np.tan(np.arcsin(descent_2.descent_rate/descent_2.air_speed))
     
     cruise_range = mission.design_range-(x_climb_1+x_climb_2+x_descent_1+x_descent_2)
+    
+    print segments['cruise'].distance
+    
+    mission.total_range=segments['cruise'].distance+x_climb_1+x_climb_2+x_descent_1+x_descent_2
   
-    segments['cruise'].distance = cruise_range
+    #segments['cruise'].distance = cruise_range
     
     return nexus
 
