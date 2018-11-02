@@ -295,7 +295,7 @@ def vehicle_setup():
     net.nacelle_diameter_forward  = 0.1732 * Units.meters
     net.engine_length_lift        = 0.47244 * Units.meters
     net.engine_length_forward     = 1.2 * Units.meters
-    net.number_of_engines_lift    = 14
+    net.number_of_engines_lift    = 12
     net.number_of_engines_forward = 2
     net.thrust_angle_lift         = 0.0 * Units.degrees
     net.thrust_angle_forward      = 0.0 * Units.degrees

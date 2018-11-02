@@ -382,6 +382,23 @@ def post_process(nexus):
     
     results.base.conditions.rpm_forward_all_segments=value
     
+    lift_coefficient=[]
+    
+    lift_coefficient.extend(conditions.climb_1.aerodynamics.lift_coefficient[:,0])
+    lift_coefficient.extend(conditions.climb_2.aerodynamics.lift_coefficient[:,0])
+    lift_coefficient.extend(conditions.cruise.aerodynamics.lift_coefficient[:,0])
+    lift_coefficient.extend(conditions.descent_1.aerodynamics.lift_coefficient[:,0])
+    lift_coefficient.extend(conditions.descent_2.aerodynamics.lift_coefficient[:,0])
+    
+    for x in lift_coefficient:
+        if x < 0.0:
+            value=-1.0
+            break
+        else:
+            value=1.0
+    
+    results.base.conditions.lift_coefficient_all_segments=value
+    
     
     
     write_optimization_outputs(nexus, filename)

@@ -103,6 +103,7 @@ def setup():
         [ 'Throttle_HL'     , '>=', 0.0, 1.0, Units.less],
         [ 'HL_rpm'           , '>=', 0.0, 1.0, Units['rpm']],
         [ 'cruise_rpm'       , '>=', 0.0, 1.0, Units['rpm']],
+        [ 'lift_coefficient'       , '>', 0.0, 1.0, Units.less],
     ])
     
     # -------------------------------------------------------------------
@@ -138,6 +139,7 @@ def setup():
         [ 'Throttle_HL'            ,   'results.base.conditions.lift_throttle_all_segments'              ],
         [ 'HL_rpm'            ,  'results.base.conditions.rpm_lift_all_segments'           ],
         [ 'cruise_rpm'            ,  'results.base.conditions.rpm_forward_all_segments'             ],
+        [ 'lift_coefficient'            ,  'results.base.conditions.lift_coefficient_all_segments'             ],
     ]     
     
     # -------------------------------------------------------------------
