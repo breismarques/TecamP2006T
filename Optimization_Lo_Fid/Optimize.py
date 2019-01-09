@@ -25,7 +25,7 @@ import SUAVE.Optimization.Package_Setups.scipy_setup as scipy_setup
 def main():
     
     problem = setup()
-    output  = scipy_setup.SciPy_Solve(problem)
+    output  = scipy_setup.SciPy_Solve(problem,solver='SLSQP', sense_step = 1.4901161193847656e-08)
      
     
     ## Uncomment these lines when you want to start an optimization problem from a different initial guess
@@ -73,11 +73,15 @@ def setup():
         [ 'climb2_rate'        ,    3.0  , (  2.   ,   6.    ) ,   3.0  , Units['m/s']],
         [ 'descent1_rate'      ,   4.5   , (  3.   ,   10.    ) ,  4.5   , Units['m/s']],
         [ 'descent2_rate'      ,    3.0  , (  2.   ,   7.    ) ,  3.0   , Units['m/s']],
-        [ 'voltage'      ,   461.   , (  100.   ,   700.    ) ,  461.   , Units.watts],
+        [ 'voltage'      ,   461.   , (  100.   ,   700.    ) ,  461.   , Units['volt']],
         [ 'motor_kv_cruise'      ,   180.   , (  80.   ,   220.    ) ,  180.   , Units['rpm/volt']],
         [ 'motor_kv_HL'      ,   90.   , (  30.   ,   120.    ) ,  90.   , Units['rpm/volt']],
-        [ 'bat_spec_energy'      ,   4500.  , (  300.   ,   4600.    ) ,  4500.  , Units.Wh/Units.kg],
-        [ 'bat_spec_power'      ,   0.837   , (  0.5   ,   10.    ) ,  0.837   , Units.kW/Units.kg],
+        #[ 'bat_spec_energy'      ,   4500.  , (  300.   ,   4600.    ) ,  4500.  , Units.Wh/Units.kg],
+        #[ 'bat_spec_power'      ,   0.837   , (  0.5   ,   10.    ) ,  0.837   , Units.kW/Units.kg],
+        #[ 'bat_max_voltage'      ,   60000.   , (  0.5   ,   100000    ) ,  60000.   , Units['volt']],
+        #[ 'bat_resistance'      ,   0.0153   , (  0.0001   ,   50.    ) ,  0.0153   , Units['ohm']],
+        #[ 'payload_draw'      ,   50.   , (  5.   ,   50000.    ) ,  50.   , Units.watts],
+        #[ 'avionics_draw'      ,   50.   , (  5.   ,   50000.    ) ,  50.   , Units.watts],
     ])
 
     # -------------------------------------------------------------------
@@ -87,7 +91,7 @@ def setup():
     # throw an error if the user isn't specific about wildcards
     # [ tag, scaling, units ]
     problem.objective = np.array([
-        [ 'range', -10, Units.nautical_miles ]
+        [ 'range', -540.9079921321364, Units.nautical_miles ]
     ])
     
     # -------------------------------------------------------------------
@@ -97,13 +101,14 @@ def setup():
     # [ tag, sense, edge, scaling, units ]
     problem.constraints = np.array([
         #[ 'energy_constraint', '=', 0.0, 1.0, Units.less],
-        [ 'battery_energy'     , '>=', 0.0, 1.0, Units.kg  ],
+        [ 'battery_energy'     , '>', -0.1, 1.0, Units.Wh  ],
+        #[ 'battery_draw'     , '>', -0.1, 1.0, Units.kW  ],
         #[ 'CL'               , '>', 0.0, 1.0, Units.less],
-        [ 'Throttle_cruise'     , '>=', 0.0, 1.0, Units.less],
-        [ 'Throttle_HL'     , '>=', 0.0, 1.0, Units.less],
-        [ 'HL_rpm'           , '>=', 0.0, 1.0, Units['rpm']],
-        [ 'cruise_rpm'       , '>=', 0.0, 1.0, Units['rpm']],
-        [ 'lift_coefficient'       , '>', 0.0, 1.0, Units.less],
+        [ 'Throttle_cruise'     , '>', -0.1, 1.0, Units.less],
+        #[ 'Throttle_HL'     , '>', -0.1, 1.0, Units.less],
+        [ 'HL_rpm'           , '>', -0.1, 1.0, Units['rpm']],
+        [ 'cruise_rpm'       , '>', -0.1, 1.0, Units['rpm']],
+        [ 'lift_coefficient'       , '>', -0.1, 1.0, Units.less],
     ])
     
     # -------------------------------------------------------------------
@@ -131,12 +136,17 @@ def setup():
         [ 'voltage'            ,  'vehicle_configurations.*.propulsors.propulsor.voltage'               ],
         [ 'motor_kv_cruise'            ,  'vehicle_configurations.*.propulsors.propulsor.motor_forward.kv'               ],
         [ 'motor_kv_HL'            ,  'vehicle_configurations.*.propulsors.propulsor.motor_lift.kv'               ],
-        [ 'bat_spec_energy'            ,  'vehicle_configurations.*.propulsors.propulsor.battery.specific_energy'               ],
-        [ 'bat_spec_power'            ,  'vehicle_configurations.*.propulsors.propulsor.battery.specific_power'               ],
+        #[ 'bat_spec_energy'            ,  'vehicle_configurations.*.propulsors.propulsor.battery.specific_energy'               ],
+        #[ 'bat_spec_power'            ,  'vehicle_configurations.*.propulsors.propulsor.battery.specific_power'               ],
+        #[ 'bat_max_voltage'            ,  'vehicle_configurations.*.propulsors.propulsor.battery.max_voltage'               ],
+        #[ 'bat_resistance'            ,  'vehicle_configurations.*.propulsors.propulsor.battery.resistance'               ],
+        #[ 'payload_draw'            ,  'vehicle_configurations.*.propulsors.propulsor.payload.power_draw'               ],
+        #[ 'avionics_draw'            ,  'vehicle_configurations.*.propulsors.propulsor.avionics.power_draw'               ],
         [ 'range'            ,    'missions.mission.total_range'            ],
         [ 'battery_energy'            , 'results.base.conditions.battery_energy_all_segments'                ],
+        #[ 'battery_draw'            , 'results.base.conditions.battery_charging_power_all_segments'                ],
         [ 'Throttle_cruise'            ,   'results.base.conditions.throttle_all_segments'              ],
-        [ 'Throttle_HL'            ,   'results.base.conditions.lift_throttle_all_segments'              ],
+        #[ 'Throttle_HL'            ,   'results.base.conditions.lift_throttle_all_segments'              ],
         [ 'HL_rpm'            ,  'results.base.conditions.rpm_lift_all_segments'           ],
         [ 'cruise_rpm'            ,  'results.base.conditions.rpm_forward_all_segments'             ],
         [ 'lift_coefficient'            ,  'results.base.conditions.lift_coefficient_all_segments'             ],

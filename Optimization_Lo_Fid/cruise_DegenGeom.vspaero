@@ -1,0 +1,40 @@
+Sref = 17.860000 
+Cref = 1.900000 
+Bref = 9.400000 
+X_cg = 4.079233 
+Y_cg = 0.000000 
+Z_cg = 0.650232 
+Mach = 0.511230 
+AoA = 9.000000 
+Beta = 0.000000 
+Vinf = 173.818058 
+Rho = 1.225000 
+ReCref = 10000000.000000 
+ClMax = 0.000000 
+MaxTurningAngle = 0.000000 
+Symmetry = NO 
+FarDist = 0.000000 
+NumWakeNodes = -1 
+WakeIters = 3 
+NumberOfRotors = 2 
+PropElement_1
+1
+2.788720 4.700000 1.078432 
+1.000000 -0.000000 -0.000000 
+0.500000 
+0.000000 
+36.651914 
+0.001000 
+55.065565 
+PropElement_2
+2
+2.788720 -4.700000 1.078432 
+1.000000 0.000000 0.000000 
+0.500000 
+0.000000 
+36.651914 
+0.001000 
+55.065565 
+NumberOfControlGroups = 0 
+Preconditioner = N 
+VortexLift = N 

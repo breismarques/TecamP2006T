@@ -77,7 +77,7 @@ def mission_setup(analyses,vehicle):
     segment = Segments.Climb.Constant_Speed_Constant_Rate_VSP(no_lift_segment)
     segment.tag = "climb_1"
 
-    segment.analyses.extend(analyses.takeoff)
+    segment.analyses.extend(analyses.base)
 
     
     segment.state.numerics.number_control_points = 4
@@ -100,7 +100,7 @@ def mission_setup(analyses,vehicle):
     segment_2 = Segments.Climb.Constant_Speed_Constant_Rate_VSP(no_lift_segment)
     segment_2.tag = "climb_2"
 
-    segment_2.analyses.extend(analyses.climb)
+    segment_2.analyses.extend(analyses.base)
 
     
     segment_2.state.numerics.number_control_points = 4
@@ -178,7 +178,7 @@ def mission_setup(analyses,vehicle):
     segment = Segments.Descent.Constant_Speed_Constant_Rate_VSP(no_lift_segment)
     segment.tag = "descent_1"
 
-    segment.analyses.extend(analyses.descent)
+    segment.analyses.extend(analyses.base)
 
     
     segment.state.numerics.number_control_points = 4
@@ -200,7 +200,7 @@ def mission_setup(analyses,vehicle):
     segment = Segments.Descent.Constant_Speed_Constant_Rate_VSP(no_lift_segment)
     segment.tag = "descent_2"
 
-    segment.analyses.extend(analyses.landing)
+    segment.analyses.extend(analyses.base)
 
     
     segment.state.numerics.number_control_points = 4

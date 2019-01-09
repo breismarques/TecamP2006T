@@ -299,7 +299,7 @@ def vehicle_setup():
     net.number_of_engines_forward = 2
     net.thrust_angle_lift         = 0.0 * Units.degrees
     net.thrust_angle_forward      = 0.0 * Units.degrees
-    net.voltage           = 461.  #461.
+    net.voltage           = 461. * Units['volt']  #461.
     net.areas_forward             = Data()
     net.areas_forward.wetted      = 1.1*np.pi*net.nacelle_diameter_forward*net.engine_length_forward
     net.areas_lift             = Data()
@@ -423,7 +423,7 @@ def vehicle_setup():
     bat.specific_energy      = 4500.0 * Units.Wh/Units.kg  #192.84
     bat.specific_power       = 0.837 * Units.kW/Units.kg  #0.837
     bat.resistance           = 0.0153
-    bat.max_voltage          = 60000.   #10000.
+    bat.max_voltage          = 60000. * Units['volt']   #10000.
     initialize_from_mass(bat,bat.mass_properties.mass)
     net.battery              = bat
    
@@ -460,68 +460,6 @@ def configs_setup(vehicle):
     config = SUAVE.Components.Configs.Config(base_config)
     config.tag = 'cruise'
     config.propulsors.propulsor.number_of_engines_lift = 0
-    configs.append(config)
-
-    # ------------------------------------------------------------------
-    #   Takeoff Configuration
-    # ------------------------------------------------------------------
-    config = SUAVE.Components.Configs.Config(base_config)
-    config.tag = 'takeoff'
-    #config.wings['main_wing'].flaps.angle = 30. * Units.deg
-    config.max_lift_coefficient_factor    = 1.
-
-    configs.append(config)
-    
-    # ------------------------------------------------------------------
-    #   Climb Configuration
-    # ------------------------------------------------------------------
-    config = SUAVE.Components.Configs.Config(base_config)
-    config.tag = 'climb'
-    #config.wings['main_wing'].flaps.angle = 30. * Units.deg
-
-    configs.append(config)
-    
-    # ------------------------------------------------------------------
-    #   Descent Configuration
-    # ------------------------------------------------------------------
-    config = SUAVE.Components.Configs.Config(base_config)
-    config.tag = 'descent'
-    #config.wings['main_wing'].flaps.angle = 30. * Units.deg
-
-    configs.append(config)
-    
-    # ------------------------------------------------------------------
-    #   Cutback Configuration
-    # ------------------------------------------------------------------
-    config = SUAVE.Components.Configs.Config(base_config)
-    config.tag = 'cutback'
-    #config.wings['main_wing'].flaps.angle = 30. * Units.deg
-    #config.max_lift_coefficient_factor    = 1. #0.95
-
-    configs.append(config)    
-
-    # ------------------------------------------------------------------
-    #   Landing Configuration
-    # ------------------------------------------------------------------
-
-    config = SUAVE.Components.Configs.Config(base_config)
-    config.tag = 'landing'
-
-    #config.wings['main_wing'].flaps.angle = 40. * Units.deg  
-    #config.max_lift_coefficient_factor    = 1. #0.95
-
-    configs.append(config)
-
-    # ------------------------------------------------------------------
-    #   Short Field Takeoff Configuration
-    # ------------------------------------------------------------------ 
-
-    config = SUAVE.Components.Configs.Config(base_config)
-    config.tag = 'short_field_takeoff'
-    
-    #config.wings['main_wing'].flaps.angle = 30. * Units.deg
-    #config.max_lift_coefficient_factor    = 1. #0.95
-  
     configs.append(config)
 
     return configs
