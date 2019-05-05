@@ -358,7 +358,7 @@ def vehicle_setup():
     prop_lift.design_Cl           = 0.8
     prop_lift.design_altitude     = 0.0 * Units.meter
     prop_lift.design_thrust       = 0.0 * Units.newton
-    prop_lift.design_power        = 10000. * Units.watts 
+    prop_lift.design_power        = 10500. * Units.watts 
     prop_lift                     = propeller_design(prop_lift)
 
     net.propeller_lift = prop_lift
@@ -419,11 +419,11 @@ def vehicle_setup():
 
     # Component 6 - the Battery
     bat = SUAVE.Components.Energy.Storages.Batteries.Constant_Mass.Lithium_Ion()
-    bat.mass_properties.mass = 358.33 * Units.kg
-    bat.specific_energy      = 4500.0 * Units.Wh/Units.kg  #192.84
-    bat.specific_power       = 0.837 * Units.kW/Units.kg  #0.837
-    bat.resistance           = 0.0153
-    bat.max_voltage          = 60000. * Units['volt']   #10000.
+    bat.mass_properties.mass = 386.0 * Units.kg
+    bat.specific_energy      = 121.8 * Units.Wh/Units.kg  #192.84
+    bat.specific_power       = 0.312 * Units.kW/Units.kg  #0.837
+    bat.resistance           = 0.32
+    bat.max_voltage          = 538. * Units['volt']   #10000.
     initialize_from_mass(bat,bat.mass_properties.mass)
     net.battery              = bat
    

@@ -25,12 +25,7 @@ import SUAVE.Optimization.Package_Setups.scipy_setup as scipy_setup
 def main():
     
     problem = setup()
-    output  = scipy_setup.SciPy_Solve(problem)
-    
-    print output
-    
-    ## Uncomment to view contours of the design space
-    variable_sweep(problem)
+    output  = scipy_setup.SciPy_Solve(problem,solver='SLSQP', sense_step = 1.4901161193847656e-08)
      
     
     ## Uncomment these lines when you want to start an optimization problem from a different initial guess
@@ -42,7 +37,7 @@ def main():
     
     problem.translate(output)
 
-    Plot_Mission.plot_mission(problem.results.mission)
+    Plot_Mission.plot_mission(problem)
     
     return
 
@@ -63,21 +58,30 @@ def setup():
 
     #   [ tag                            , initial, (lb,ub)             , scaling , units ]
     problem.inputs = np.array([
-        [ 'wing_aspect_ratio'      ,  2.7935   , (   1. ,   7.   ) ,   2.7935 , Units.less],
-        [ 'wing_area'              ,  68.172    , (   50.  ,    80.   ) ,   68.172  , Units.meter**2],
-        [ 'cruise_airspeed'        ,  450.    , (   40.  ,    120.   ) ,   70.  , Units.knots],
-        [ 'climb1_airspeed'        , 268.25   , (   100.0  , 200.0      ) ,  268.25   , Units.knots],
-        [ 'climb2_airspeed'        ,  326.56   , ( 300.0    ,  400.0     ) ,   326.56  , Units.knots],
-        [ 'descent1_airspeed'      ,  440.0  , ( 400.0    ,  500.0     ) ,  440.0   , Units.knots],
-        [ 'descent2_airspeed'      ,   250.0   , ( 200.0    ,  300.0     ) ,  250.0   , Units.knots],
+        [ 'wing_span'      ,  9.4   , (   9.4 ,   15.   ) ,   9.4 , Units.meter],
+        [ 'wing_root_chord'  ,  2.    , (   1.  ,    4.   ) ,   2.  , Units.meter],
+        [ 'cruise_distance'        ,  150.    , (   50.  ,    300.   ) ,   150.  , Units.nautical_miles],
+        [ 'cruise_airspeed'        ,  200.   , (   90.  ,    300.   ) ,   200.  , Units['m/s']],
+        [ 'climb1_airspeed'        , 125.0   , (   50.0  ,  150.0      ) ,  125.0   , Units['m/s']],
+        [ 'climb2_airspeed'        ,  190.0   , ( 70.0    ,  250.0     ) ,   190.0  , Units['m/s']],
+        [ 'descent1_airspeed'      ,  180.0  , ( 100.    ,  270.     ) ,  180.0   , Units['m/s']],
+        [ 'descent2_airspeed'      ,   145.0   , ( 50.    ,  170.0     ) ,  145.0   , Units['m/s']],
         [ 'climb1_altitude'        ,   3.  , (  1.   ,  5.     ) ,  3.   , Units.km],
-        [ 'climb2_altitude'        ,   11.28   , (   7.  ,  15.     ) , 11.28    , Units.km],
-        [ 'descent1_altitude'      ,  3.657    , (  2.   ,  7.     ) ,   3.657  , Units.km],
-        [ 'climb1_rate'        ,    15.24  , (   5.  ,  20.     ) ,  15.24   , Units['m/s']],
-        [ 'climb2_rate'        ,    9.14  , (  3.   ,   10.    ) ,   9.14  , Units['m/s']],
-        [ 'descent1_rate'      ,   11.68   , (  3.   ,   15.    ) ,  11.68   , Units['m/s']],
-        [ 'descent2_rate'      ,    7.62  , (  2.   ,   10.    ) ,  7.62   , Units['m/s']],
-        [ 'voltage'      ,   461.   , (  100.   ,   700.    ) ,  461.   , Units.watts],
+        [ 'climb2_altitude'        ,   8.0   , (   7.  ,  15.     ) , 8.0    , Units.km],
+        [ 'descent1_altitude'      ,  3.0    , (  2.   ,  7.     ) ,   3.0  , Units.km],
+        [ 'climb1_rate'        ,    6.0  , (   3.  ,  12.     ) ,  6.0   , Units['m/s']],
+        [ 'climb2_rate'        ,    3.0  , (  2.   ,   6.    ) ,   3.0  , Units['m/s']],
+        [ 'descent1_rate'      ,   4.5   , (  3.   ,   10.    ) ,  4.5   , Units['m/s']],
+        [ 'descent2_rate'      ,    3.0  , (  2.   ,   7.    ) ,  3.0   , Units['m/s']],
+        [ 'voltage'      ,   461.   , (  100.   ,   700.    ) ,  461.   , Units['volt']],
+        [ 'motor_kv_cruise'      ,   180.   , (  80.   ,   220.    ) ,  180.   , Units['rpm/volt']],
+        [ 'motor_kv_HL'      ,   90.   , (  30.   ,   120.    ) ,  90.   , Units['rpm/volt']],
+        [ 'bat_spec_energy'      ,   4500.  , (  300.   ,   4600.    ) ,  4500.  , Units.Wh/Units.kg],
+        [ 'bat_spec_power'      ,   0.837   , (  0.5   ,   10.    ) ,  0.837   , Units.kW/Units.kg],
+        #[ 'bat_max_voltage'      ,   60000.   , (  0.5   ,   100000    ) ,  60000.   , Units['volt']],
+        #[ 'bat_resistance'      ,   0.0153   , (  0.0001   ,   50.    ) ,  0.0153   , Units['ohm']],
+        #[ 'payload_draw'      ,   50.   , (  5.   ,   50000.    ) ,  50.   , Units.watts],
+        #[ 'avionics_draw'      ,   50.   , (  5.   ,   50000.    ) ,  50.   , Units.watts],
     ])
 
     # -------------------------------------------------------------------
@@ -87,7 +91,7 @@ def setup():
     # throw an error if the user isn't specific about wildcards
     # [ tag, scaling, units ]
     problem.objective = np.array([
-        [ 'range', -10, Units.nautical_miles ]
+        [ 'range', -540.9079921321364, Units.nautical_miles ]
     ])
     
     # -------------------------------------------------------------------
@@ -97,12 +101,14 @@ def setup():
     # [ tag, sense, edge, scaling, units ]
     problem.constraints = np.array([
         #[ 'energy_constraint', '=', 0.0, 1.0, Units.less],
-        [ 'battery_mass'     , '>', 0.0, 1.0, Units.kg  ],       
+        [ 'battery_energy'     , '>', -0.1, 1.0, Units.Wh  ],
+        #[ 'battery_draw'     , '>', -0.1, 1.0, Units.kW  ],
         #[ 'CL'               , '>', 0.0, 1.0, Units.less],
-        [ 'Throttle_min'     , '>', 0.0, 1.0, Units.less],
-        [ 'Throttle_max'     , '>', 0.0, 1.0, Units.less],
-        [ 'HL_rpm'           , '>=', 0.0, 100, Units['rpm']],
-        [ 'cruise_rpm'       , '>=', 0.0, 100, Units['rpm']],
+        #[ 'Throttle_cruise'     , '>', -0.1, 1.0, Units.less],
+        #[ 'Throttle_HL'     , '>', -0.1, 1.0, Units.less],
+        [ 'HL_rpm'           , '>', -0.1, 1.0, Units['rpm']],
+        #[ 'cruise_rpm'       , '>', -0.1, 1.0, Units['rpm']],
+        [ 'lift_coefficient'       , '>', -0.1, 1.0, Units.less],
     ])
     
     # -------------------------------------------------------------------
@@ -112,8 +118,9 @@ def setup():
     # [ 'alias' , ['data.path1.name','data.path2.name'] ]
 
     problem.aliases = [
-        [ 'wing_aspect_ratio'          ,    'vehicle_configurations.*.wings.main_wing.aspect_ratio'   ],
-        [ 'wing_area'                  ,     'vehicle_configurations.*.wings.main_wing.areas.reference'         ],
+        [ 'wing_span'          ,    'vehicle_configurations.*.wings.main_wing.spans.projected'   ],
+        [ 'wing_root_chord'                  ,     'vehicle_configurations.*.wings.main_wing.chords.root'         ],
+        [ 'cruise_distance'            ,   'missions.mission.segments.cruise.distance'              ],
         [ 'cruise_airspeed'            ,   'missions.mission.segments.cruise.air_speed'              ],
         [ 'climb1_airspeed'            ,   'missions.mission.segments.climb_1.air_speed'             ],
         [ 'climb2_airspeed'            ,   'missions.mission.segments.climb_2.air_speed'              ],
@@ -127,12 +134,22 @@ def setup():
         [ 'descent1_rate'            ,  'missions.mission.segments.descent_1.descent_rate'               ],
         [ 'descent2_rate'            ,  'missions.mission.segments.descent_2.descent_rate'               ],
         [ 'voltage'            ,  'vehicle_configurations.*.propulsors.propulsor.voltage'               ],
-        [ 'range'            ,    'nexus.missions.mission.total_range'            ],
-        [ 'battery_mass'            , 'vehicle_configurations.base.propulsors.network.battery.mass_properties.mass'                ],
-        [ 'Throttle_min'            ,   'summary.throttle_min'              ],
-        [ 'Throttle_max'            ,   'summary.throttle_max'              ],
-        [ 'HL_rpm'            ,  'state.conditions.propulsion.rpm_lift'           ],
-        [ 'cruise_rpm'            ,  'state.conditions.propulsion.rpm_forward'             ],
+        [ 'motor_kv_cruise'            ,  'vehicle_configurations.*.propulsors.propulsor.motor_forward.kv'               ],
+        [ 'motor_kv_HL'            ,  'vehicle_configurations.*.propulsors.propulsor.motor_lift.kv'               ],
+        [ 'bat_spec_energy'            ,  'vehicle_configurations.*.propulsors.propulsor.battery.specific_energy'               ],
+        [ 'bat_spec_power'            ,  'vehicle_configurations.*.propulsors.propulsor.battery.specific_power'               ],
+        #[ 'bat_max_voltage'            ,  'vehicle_configurations.*.propulsors.propulsor.battery.max_voltage'               ],
+        #[ 'bat_resistance'            ,  'vehicle_configurations.*.propulsors.propulsor.battery.resistance'               ],
+        #[ 'payload_draw'            ,  'vehicle_configurations.*.propulsors.propulsor.payload.power_draw'               ],
+        #[ 'avionics_draw'            ,  'vehicle_configurations.*.propulsors.propulsor.avionics.power_draw'               ],
+        [ 'range'            ,    'missions.mission.total_range'            ],
+        [ 'battery_energy'            , 'results.base.conditions.battery_energy_all_segments'                ],
+        #[ 'battery_draw'            , 'results.base.conditions.battery_charging_power_all_segments'                ],
+        #[ 'Throttle_cruise'            ,   'results.base.conditions.throttle_all_segments'              ],
+        #[ 'Throttle_HL'            ,   'results.base.conditions.lift_throttle_all_segments'              ],
+        [ 'HL_rpm'            ,  'results.base.conditions.rpm_lift_all_segments'           ],
+        #[ 'cruise_rpm'            ,  'results.base.conditions.rpm_forward_all_segments'             ],
+        [ 'lift_coefficient'            ,  'results.base.conditions.lift_coefficient_all_segments'             ],
     ]     
     
     # -------------------------------------------------------------------
@@ -162,31 +179,6 @@ def setup():
     nexus.total_number_of_iterations = 0
     
     return nexus
-
-def variable_sweep(problem):    
-    number_of_points = 5
-    outputs     = carpet_plot(problem, number_of_points, 0, 0)  #run carpet plot, suppressing default plots
-    inputs      = outputs.inputs
-    objective   = outputs.objective
-    constraints = outputs.constraint_val
-    plt.figure(0)
-    CS   = plt.contourf(inputs[0,:],inputs[1,:], objective, 20, linewidths=2)
-    cbar = plt.colorbar(CS)
-    
-    cbar.ax.set_ylabel('fuel burn (kg)')
-    CS_const = plt.contour(inputs[0,:],inputs[1,:], constraints[0,:,:])
-    plt.clabel(CS_const, inline=1, fontsize=10)
-    cbar = plt.colorbar(CS_const)
-    cbar.ax.set_ylabel('fuel margin')
-    
-    plt.xlabel('Wing Area (m^2)')
-    plt.ylabel('Cruise Altitude (km)')
-    
-    plt.legend(loc='upper left')  
-    plt.show(block=True)    
-    
-    return
-
 
 
 if __name__ == '__main__':
