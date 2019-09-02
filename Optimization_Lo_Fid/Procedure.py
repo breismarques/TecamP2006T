@@ -279,6 +279,8 @@ def post_process(nexus):
             
     summary.max_throttle = max_throttle
     
+    summary.total_range = missions.mission.total_range
+    
     # CL max constraint, it is the same throughout the mission
     #CL = res.aerodynamics.lift_coefficient[0]
     
@@ -309,11 +311,12 @@ def post_process(nexus):
     for x in energy:
         if x < 0.0:
             value=-1.0
+            #missions.mission.total_range=540.9079921321364
             break
         else:
             value=1.0
     
-    results.base.conditions.battery_energy_all_segments=value
+    summary.battery_energy_all_segments=value
     
     
     throttle=[]
@@ -327,11 +330,16 @@ def post_process(nexus):
     for x in throttle:
         if x < -0.1:
             value=-1.0
+            #missions.mission.total_range=540.9079921321364
+            break
+        elif x > 1.1:          
+            value=2.0
+            #missions.mission.total_range=540.9079921321364
             break
         else:
             value=1.0
     
-    results.base.conditions.throttle_all_segments=value
+    summary.throttle_all_segments=value
     
     lift_throttle=[]
     
@@ -344,11 +352,16 @@ def post_process(nexus):
     for x in lift_throttle:
         if x < -0.1:
             value=-1.0
+            #missions.mission.total_range=540.9079921321364
+            break
+        elif x > 1.1:          
+            value=2.0
+            #missions.mission.total_range=540.9079921321364
             break
         else:
             value=1.0
     
-    results.base.conditions.lift_throttle_all_segments=value
+    summary.lift_throttle_all_segments=value
     
     rpm_lift=[]
     
@@ -363,11 +376,12 @@ def post_process(nexus):
     for x in rpm_lift:
         if x < -1:
             value=-1.0
+            #missions.mission.total_range=540.9079921321364
             break
         else:
             value=1.0
     
-    results.base.conditions.rpm_lift_all_segments=value
+    summary.rpm_lift_all_segments=value
     
     rpm_forward=[]
     
@@ -382,11 +396,12 @@ def post_process(nexus):
     for x in rpm_forward:
         if x < -0.1:
             value=-1.0
+            #missions.mission.total_range=540.9079921321364
             break
         else:
             value=1.0
     
-    results.base.conditions.rpm_forward_all_segments=value
+    summary.rpm_forward_all_segments=value
     
     lift_coefficient=[]
     
@@ -399,11 +414,12 @@ def post_process(nexus):
     for x in lift_coefficient:
         if x < -0.1:
             value=-1.0
+            #missions.mission.total_range=540.9079921321364
             break
         else:
             value=1.0
     
-    results.base.conditions.lift_coefficient_all_segments=value
+    summary.lift_coefficient_all_segments=value
     
     charging_power=[]
     
@@ -416,11 +432,12 @@ def post_process(nexus):
     for x in charging_power:
         if x < -0.1:
             value=-1.0
+            #missions.mission.total_range=540.9079921321364
             break
         else:
             value=1.0
     
-    results.base.conditions.battery_charging_power_all_segments=value
+    summary.battery_charging_power_all_segments=value
     
     
     AoA=[]
@@ -448,6 +465,16 @@ def post_process(nexus):
     mach.extend(conditions.descent_2.freestream.mach_number[:,0])
     
     print mach
+    
+    for x in mach:
+        if x > 1.01:
+            value=2.0
+            #missions.mission.total_range=540.9079921321364
+            break
+        else:
+            value=1.0
+    
+    summary.mach_number_all_segments=value
     
     cp_lift=[]
     

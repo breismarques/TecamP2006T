@@ -328,7 +328,7 @@ def vehicle_setup():
     
     #prop_attributes                     = propeller_design(prop_attributes)
     
-    prop_forward = SUAVE.Components.Energy.Converters.Propeller_Lo_Fid()
+    prop_forward = SUAVE.Components.Energy.Converters.Propeller()
     prop_forward.number_blades       = 3.0
     prop_forward.propulsive_efficiency = 0.85
     prop_forward.freestream_velocity = 50.0 * Units['m/s'] # freestream m/s
@@ -348,7 +348,7 @@ def vehicle_setup():
     # Design the Propeller
     #prop_attributes = Data()  
     
-    prop_lift = SUAVE.Components.Energy.Converters.Propeller_Lo_Fid()
+    prop_lift = SUAVE.Components.Energy.Converters.Propeller()
     prop_lift.number_blades       = 5.0
     prop_lift.propulsive_efficiency = 0.85
     prop_lift.freestream_velocity = 1. * Units['m/s'] # freestream m/s
