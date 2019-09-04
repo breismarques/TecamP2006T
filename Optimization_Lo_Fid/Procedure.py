@@ -138,84 +138,109 @@ def simple_sizing(nexus):
     conditions             = SUAVE.Analyses.Mission.Segments.Conditions.Aerodynamics()   #assign conditions in form for propulsor sizing
     conditions.freestream  = freestream
     
-    #for config in configs:
-    #    config.wings.horizontal_stabilizer.areas.reference = (26.0/92.0)*config.wings.main_wing.areas.reference
+    for config in configs:
+        
+        # fuselage
+        fuselage              = config.fuselages['fuselage']
+        fuselage.differential_pressure = diff_pressure 
+        
+        # Main Wing
+        
+        main_wing_span = config.wings.main_wing.spans.projected
+        main_wing_root_chord = config.wings.main_wing.chords.root
+        config.wings.main_wing.chords.tip  = config.wings.main_wing.chords.root * config.wings.main_wing.taper
+        config.wings.main_wing.areas.reference = (main_wing_root_chord+config.wings.main_wing.chords.tip)*main_wing_span/2.0
+        config.wings.main_wing.areas.wetted  = 2.0 * config.wings.main_wing.areas.reference
+        config.wings.main_wing.areas.exposed  = config.wings.main_wing.areas.wetted
+        config.wings.main_wing.areas.affected  = config.wings.main_wing.areas.wetted
+        config.wings.main_wing.aspect_ratio = (main_wing_span*main_wing_span)/config.wings.main_wing.areas.reference
+        
+        config.wings.main_wing.flaps.chord      =  main_wing_root_chord*0.15   
+        config.wings.main_wing.flaps.span_start =  0.3 * main_wing_span
+        config.wings.main_wing.flaps.span_end   =  0.8 * main_wing_span
+        config.wings.main_wing.flaps.area       = config.wings.main_wing.flaps.chord * (config.wings.main_wing.flaps.span_end-config.wings.main_wing.flaps.span_start)
+        
+        # Horizontal Stabilizer
+        
+        config.wings.horizontal_stabilizer.areas.reference = 0.145 * config.wings.main_wing.areas.reference
+        config.wings.horizontal_stabilizer.spans.projected         = np.sqrt(config.wings.horizontal_stabilizer.aspect_ratio*config.wings.horizontal_stabilizer.areas.reference)
+        config.wings.horizontal_stabilizer.chords.root             = config.wings.horizontal_stabilizer.areas.reference/config.wings.horizontal_stabilizer.spans.projected
+        config.wings.horizontal_stabilizer.chords.tip              = config.wings.horizontal_stabilizer.chords.root
+        config.wings.horizontal_stabilizer.chords.mean_aerodynamic = (config.wings.horizontal_stabilizer.chords.root*(2.0/3.0)*((1.0+config.wings.horizontal_stabilizer.taper+config.wings.horizontal_stabilizer.taper**2.0)/(1.0+config.wings.horizontal_stabilizer.taper)))
+        config.wings.horizontal_stabilizer.areas.wetted            = 2.0 * config.wings.horizontal_stabilizer.areas.reference
+        config.wings.horizontal_stabilizer.areas.exposed           = config.wings.horizontal_stabilizer.areas.wetted
+        config.wings.horizontal_stabilizer.areas.affected          = config.wings.horizontal_stabilizer.areas.wetted
+        
+        
+        # Vertical Stabilizer
+        
+        config.wings.vertical_stabilizer.areas.reference   = 0.099 * config.wings.main_wing.areas.reference
+        config.wings.vertical_stabilizer.areas.wetted            = 2.0 * config.wings.vertical_stabilizer.areas.reference
+        config.wings.vertical_stabilizer.areas.exposed           = config.wings.vertical_stabilizer.areas.wetted
+        config.wings.vertical_stabilizer.areas.affected          = config.wings.vertical_stabilizer.areas.wetted
+        
+        config.wings.vertical_stabilizer.spans.projected         = np.sqrt(config.wings.vertical_stabilizer.aspect_ratio*config.wings.vertical_stabilizer.areas.reference)
+        config.wings.vertical_stabilizer.chords.root             = (2.0*config.wings.vertical_stabilizer.areas.reference)/(config.wings.vertical_stabilizer.spans.projected*(1+config.wings.vertical_stabilizer.taper))
+        config.wings.vertical_stabilizer.chords.tip              = config.wings.vertical_stabilizer.chords.root*config.wings.vertical_stabilizer.taper
+        config.wings.vertical_stabilizer.chords.mean_aerodynamic = (config.wings.vertical_stabilizer.chords.root*(2.0/3.0)*((1.0+config.wings.vertical_stabilizer.taper+config.wings.vertical_stabilizer.taper**2.0)/(1.0+config.wings.vertical_stabilizer.taper)))  
             
-    #    for wing in config.wings:
-            
-    #        wing = SUAVE.Methods.Geometry.Two_Dimensional.Planform.wing_planform(wing)
-    #        wing.areas.exposed  = 0.8 * wing.areas.wetted
-    #        wing.areas.affected = 0.6 * wing.areas.reference
-            
-    #    fuselage              = config.fuselages['fuselage']
-    #    fuselage.differential_pressure = diff_pressure 
+        
+        # diff the new data
+        config.store_diff()
         
         #turbofan_sizing(config.propulsors['turbofan'], mach_number = mach_number, altitude = altitude)
         #compute_turbofan_geometry(config.propulsors['turbofan'], conditions)
-        
-    # Change the dynamic pressure based on the, add a factor of safety   
-    #base.envelope.maximum_dynamic_pressure = nexus.missions.mission.segments.cruise.dynamic_pressure*1.2
-    
-    #print nexus.missions.mission.segments.cruise.dynamic_pressure*1.2
-    
-    # Scale the horizontal and vertical tails based on the main wing area
-    #For more or less "normal" looking designs the stabilizer and elevators together should be between 15 to 20% of the wing area. 
-    #The fin and rudder together should be around 12 to 15%
-    base.wings.horizontal_stabilizer.areas.reference = 0.17 * base.reference_area
-    base.wings.vertical_stabilizer.areas.reference   = 0.13 * base.reference_area
 
 
     # ------------------------------------------------------------------
     #   Landing Configuration
     # ------------------------------------------------------------------
-    #landing = nexus.vehicle_configurations.landing
-    #landing_conditions = Data()
-    #landing_conditions.freestream = Data()
+    landing = nexus.vehicle_configurations.landing
+    landing_conditions = Data()
+    landing_conditions.freestream = Data()
 
     # landing weight
-    #landing.mass_properties.landing = 1.0 * config.mass_properties.takeoff
+    landing.mass_properties.landing = 1.0 * config.mass_properties.takeoff
     
     # Landing CL_max
-    #altitude   = nexus.missions.mission.segments[-1].altitude_end
-    #atmosphere = SUAVE.Analyses.Atmospheric.US_Standard_1976()
-    #freestream_landing = atmosphere.compute_values(0.)
-    #landing_conditions.freestream.velocity           = nexus.missions.mission.segments['descent_2'].air_speed
-    #landing_conditions.freestream.density            = freestream_landing.density
-    #landing_conditions.freestream.dynamic_viscosity  = freestream_landing.dynamic_viscosity
-    #CL_max_landing,CDi = compute_max_lift_coeff(landing,landing_conditions)
-    #landing.maximum_lift_coefficient = CL_max_landing
+    altitude   = nexus.missions.mission.segments[-1].altitude_end
+    atmosphere = SUAVE.Analyses.Atmospheric.US_Standard_1976()
+    freestream_landing = atmosphere.compute_values(0.)
+    landing_conditions.freestream.velocity           = nexus.missions.mission.segments['descent_2'].air_speed
+    landing_conditions.freestream.density            = freestream_landing.density
+    landing_conditions.freestream.dynamic_viscosity  = freestream_landing.dynamic_viscosity
+    CL_max_landing,CDi = compute_max_lift_coeff(landing,landing_conditions)
+    landing.maximum_lift_coefficient = CL_max_landing
     
     #Takeoff CL_max
-    #takeoff = nexus.vehicle_configurations.takeoff
-    #takeoff_conditions = Data()
-    #takeoff_conditions.freestream = Data()    
-    #altitude = nexus.missions.mission.airport.altitude
-    #freestream_takeoff = atmosphere.compute_values(altitude)
+    takeoff = nexus.vehicle_configurations.takeoff
+    takeoff_conditions = Data()
+    takeoff_conditions.freestream = Data()    
+    altitude = nexus.missions.mission.airport.altitude
+    freestream_takeoff = atmosphere.compute_values(altitude)
    
-    #takeoff_conditions.freestream.velocity           = nexus.missions.mission.segments.climb_1.air_speed
-    #takeoff_conditions.freestream.density            = freestream_takeoff.density
-    #takeoff_conditions.freestream.dynamic_viscosity  = freestream_takeoff.dynamic_viscosity 
-    #max_CL_takeoff, CDi = compute_max_lift_coeff(takeoff,takeoff_conditions) 
-    #takeoff.maximum_lift_coefficient = max_CL_takeoff
+    takeoff_conditions.freestream.velocity           = nexus.missions.mission.segments.climb_1.air_speed
+    takeoff_conditions.freestream.density            = freestream_takeoff.density
+    takeoff_conditions.freestream.dynamic_viscosity  = freestream_takeoff.dynamic_viscosity 
+    max_CL_takeoff, CDi = compute_max_lift_coeff(takeoff,takeoff_conditions) 
+    takeoff.maximum_lift_coefficient = max_CL_takeoff
     
     #Base config CL_max
-    #base = nexus.vehicle_configurations.base
-    #base_conditions = Data()
-    #base_conditions.freestream = takeoff_conditions.freestream   
-    #max_CL_base, CDi = compute_max_lift_coeff(base,base_conditions) 
-    #base.maximum_lift_coefficient = max_CL_base
+    base = nexus.vehicle_configurations.base
+    base_conditions = Data()
+    base_conditions.freestream = takeoff_conditions.freestream   
+    max_CL_base, CDi = compute_max_lift_coeff(base,base_conditions) 
+    base.maximum_lift_coefficient = max_CL_base
     
     # Pull out the vehicle
     vec = nexus.vehicle_configurations.base
     
     # Resize the motor
-    motor_forward = vec.propulsors.propulsor.motor_forward
-    kv    = motor_forward.speed_constant
-    motor_forward = size_from_kv(motor_forward, kv)
+    kv    = vec.propulsors.propulsor.motor_forward.speed_constant
+    vec.propulsors.propulsor.motor_forward = size_from_kv(vec.propulsors.propulsor.motor_forward, kv)
 
-    motor_lift = vec.propulsors.propulsor.motor_lift
-    kv    = motor_lift.speed_constant
-    motor_lift = size_from_kv(motor_lift, kv)    
+    kv    = vec.propulsors.propulsor.motor_lift.speed_constant
+    vec.propulsors.propulsor.motor_lift = size_from_kv(vec.propulsors.propulsor.motor_lift, kv)    
     
     # diff the new data
     vec.store_diff()
@@ -229,6 +254,18 @@ def simple_sizing(nexus):
 
 def weights_battery(nexus):
     
+    vehicle=nexus.vehicle_configurations.base
+
+    # weight analysis
+    weights = nexus.analyses.base.weights.evaluate()
+    weights = nexus.analyses.cruise.weights.evaluate()
+    vehicle.mass_properties.breakdown = weights
+    weights = nexus.analyses.landing.weights.evaluate()
+    weights = nexus.analyses.takeoff.weights.evaluate()
+    
+    empty_weight     = vehicle.mass_properties.operating_empty
+    passenger_weight = vehicle.passenger_weights.mass_properties.mass
+    
     # Evaluate weights for all of the configurations
     config = nexus.analyses.base
     config.weights.evaluate() 
@@ -241,8 +278,7 @@ def weights_battery(nexus):
     mmotor  = vec.propulsors.propulsor.motor_forward.mass_properties.mass+vec.propulsors.propulsor.motor_lift.mass_properties.mass
     
     #Calculate battery mass
-    bat     = vec.propulsors.propulsor.battery
-    initialize_from_mass(bat,bat.mass_properties.mass)
+    initialize_from_mass(vec.propulsors.propulsor.battery,vec.propulsors.propulsor.battery.mass_properties.mass)
     
     # diff the new data
     vec.store_diff()
@@ -289,6 +325,7 @@ def post_process(nexus):
     print vehicle.propulsors.propulsor.battery.resistance
     print vehicle.propulsors.propulsor.payload.power_draw
     print vehicle.propulsors.propulsor.avionics.power_draw
+    print vehicle.wings.main_wing.areas.reference
     
     #aux = nexus.results
     

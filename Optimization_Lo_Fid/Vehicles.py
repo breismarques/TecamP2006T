@@ -70,18 +70,18 @@ def vehicle_setup():
     #  Landing Gear
     # ------------------------------------------------------------------        
     # used for noise calculations
-    landing_gear = SUAVE.Components.Landing_Gear.Landing_Gear()
-    landing_gear.tag = "main_landing_gear"
+    #landing_gear = SUAVE.Components.Landing_Gear.Landing_Gear()
+    #landing_gear.tag = "main_landing_gear"
     
-    landing_gear.main_tire_diameter = 0.423 * Units.m
-    landing_gear.nose_tire_diameter = 0.3625 * Units.m
-    landing_gear.main_strut_length  = 0.4833 * Units.m
-    landing_gear.nose_strut_length  = 0.3625 * Units.m
-    landing_gear.main_units  = 2    #number of main landing gear units
-    landing_gear.nose_units  = 1    #number of nose landing gear
-    landing_gear.main_wheels = 1    #number of wheels on the main landing gear
-    landing_gear.nose_wheels = 1    #number of wheels on the nose landing gear      
-    vehicle.landing_gear = landing_gear
+    #landing_gear.main_tire_diameter = 0.423 * Units.m
+    #landing_gear.nose_tire_diameter = 0.3625 * Units.m
+    #landing_gear.main_strut_length  = 0.4833 * Units.m
+    #landing_gear.nose_strut_length  = 0.3625 * Units.m
+    #landing_gear.main_units  = 2    #number of main landing gear units
+    #landing_gear.nose_units  = 1    #number of nose landing gear
+    #landing_gear.main_wheels = 1    #number of wheels on the main landing gear
+    #landing_gear.nose_wheels = 1    #number of wheels on the nose landing gear      
+    #vehicle.landing_gear = landing_gear
     
     # ------------------------------------------------------------------
     #  Fuselage
@@ -152,7 +152,7 @@ def vehicle_setup():
     #   Main Wing
     # ------------------------------------------------------------------        
     
-    wing = SUAVE.Components.Wings.Wing()
+    wing = SUAVE.Components.Wings.Main_Wing()
     wing.tag = 'main_wing'
     
     wing.thickness_to_chord      = 0.15
@@ -161,14 +161,19 @@ def vehicle_setup():
     wing.chords.root             = 2. * Units.meter
     wing.chords.tip              = wing.chords.root*wing.taper
     wing.chords.mean_aerodynamic = 0.6 * Units.meter
-    wing.areas.reference         = (wing.chords.root+wing.chords.tip)*wing.spans.projected/2  
+    wing.areas.reference         = (wing.chords.root+wing.chords.tip)*wing.spans.projected/2
+    print wing.areas.reference
+    basearea                     = wing.areas.reference
+    wing.areas.wetted            = 2.0 * wing.areas.reference
+    wing.areas.exposed           = wing.areas.wetted
+    wing.areas.affected          = wing.areas.wetted
     wing.twists.root             = 0. * Units.degrees
     wing.twists.tip              = 0. * Units.degrees
     wing.dihedral= 1. * Units.degrees
     wing.origin                  = [2.986,0,1.077] # meters
     wing.sweeps.leading_edge     = 1.9 * Units.deg
     wing.aspect_ratio            = (wing.spans.projected*wing.spans.projected)/wing.areas.reference
-    wing.span_efficiency         = 0.99*(1-0.0407*(fuselage.width/wing.spans.projected)-1.792*((fuselage.width/wing.spans.projected)**2))
+    wing.span_efficiency         = 0.95
     wing.vertical                = False
     wing.symmetric               = True
     wing.high_lift               = True
@@ -219,9 +224,10 @@ def vehicle_setup():
     #   Flaps
     # ------------------------------------------------------------------
     
-    wing.flaps.chord      =  0.20   
-    wing.flaps.span_start =  0.1053
-    wing.flaps.span_end   =  0.6842
+    wing.flaps.chord      =  wing.chords.root*0.15   
+    wing.flaps.span_start =  0.3 * wing.spans.projected
+    wing.flaps.span_end   =  0.8 * wing.spans.projected
+    wing.flaps.area       = wing.flaps.chord * (wing.flaps.span_end-wing.flaps.span_start)
     wing.flaps.type       = 'single_slotted'
 
     # add to vehicle
@@ -234,18 +240,20 @@ def vehicle_setup():
     wing = SUAVE.Components.Wings.Wing()
     wing.tag = 'horizontal_stabilizer'
     
-    wing.aspect_ratio            = 4.193     
+    
+    wing.aspect_ratio            = 4.193
+    wing.areas.reference         = 0.145 * basearea     
     wing.sweeps.quarter_chord    = 0.0 * Units.deg
     wing.thickness_to_chord      = 0.12
     wing.taper                   = 1.0
-    wing.span_efficiency         = 0.733
-    wing.spans.projected         = 3.3 * Units.meter
-    wing.chords.root             = 0.787 * Units.meter
-    wing.chords.tip              = 0.787 * Units.meter
-    wing.chords.mean_aerodynamic = (wing.chords.root*(2.0/3.0)*((1.0+wing.taper+wing.taper**2.0)/(1.0+wing.taper))) * Units.meter
-    wing.areas.reference         = 2.5971 * Units['meters**2']  
-    wing.areas.exposed           = 4.0 * Units['meters**2']  
-    wing.areas.wetted            = 4.0 * Units['meters**2']  
+    wing.span_efficiency         = 0.97
+    wing.spans.projected         = np.sqrt(wing.aspect_ratio*wing.areas.reference)
+    wing.chords.root             = wing.areas.reference/wing.spans.projected
+    wing.chords.tip              = wing.chords.root
+    wing.chords.mean_aerodynamic = (wing.chords.root*(2.0/3.0)*((1.0+wing.taper+wing.taper**2.0)/(1.0+wing.taper)))
+    wing.areas.wetted            = 2.0 * wing.areas.reference
+    wing.areas.exposed           = wing.areas.wetted
+    wing.areas.affected          = wing.areas.wetted
     wing.twists.root             = 0.0 * Units.degrees
     wing.twists.tip              = 0.0 * Units.degrees  
     wing.origin                  = [7.789,0.0,0.3314] # meters
@@ -262,17 +270,21 @@ def vehicle_setup():
     
     wing = SUAVE.Components.Wings.Wing()
     wing.tag = 'vertical_stabilizer'    
-
+    
+    
+    wing.areas.reference         = 0.099 * basearea
+    wing.areas.wetted            = 2.0 * wing.areas.reference
+    wing.areas.exposed           = wing.areas.wetted
+    wing.areas.affected          = wing.areas.wetted
     wing.aspect_ratio            = 1.407
     wing.sweeps.quarter_chord    = 38.75 * Units.deg
     wing.thickness_to_chord      = 0.12
-    wing.taper                   = 1.0
-    wing.span_efficiency         = -0.107
-    wing.spans.projected         = 1.574 * Units.meter
-    wing.chords.root             = 1.2 * Units.meter
-    wing.chords.tip              = 0.497 * Units.meter
-    wing.chords.mean_aerodynamic = (wing.chords.root*(2.0/3.0)*((1.0+wing.taper+wing.taper**2.0)/(1.0+wing.taper))) * Units.meter
-    wing.areas.reference         = 1.761 * Units['meters**2']  
+    wing.taper                   = 0.4142
+    wing.span_efficiency         = 0.97
+    wing.spans.projected         = np.sqrt(wing.aspect_ratio*wing.areas.reference)
+    wing.chords.root             = (2.0*wing.areas.reference)/(wing.spans.projected*(1+wing.taper))
+    wing.chords.tip              = wing.chords.root*wing.taper
+    wing.chords.mean_aerodynamic = (wing.chords.root*(2.0/3.0)*((1.0+wing.taper+wing.taper**2.0)/(1.0+wing.taper)))  
     wing.twists.root             = 0.0 * Units.degrees
     wing.twists.tip              = 0.0 * Units.degrees  
     wing.origin                  = [7.25,0,0.497] # meters
@@ -437,6 +449,19 @@ def vehicle_setup():
     # add the energy network to the vehicle
     vehicle.append_component(net)
     
+    #now add weights objects
+    vehicle.landing_gear       = SUAVE.Components.Landing_Gear.Landing_Gear()
+    vehicle.control_systems    = SUAVE.Components.Physical_Component()
+    vehicle.electrical_systems = SUAVE.Components.Physical_Component()
+    vehicle.avionics           = SUAVE.Components.Energy.Peripherals.Avionics()
+    vehicle.passenger_weights  = SUAVE.Components.Physical_Component()
+    #vehicle.furnishings        = SUAVE.Components.Physical_Component()
+    #vehicle.apu                = SUAVE.Components.Physical_Component()
+    #vehicle.hydraulics         = SUAVE.Components.Physical_Component()
+    vehicle.optionals          = SUAVE.Components.Physical_Component()
+    
+    vehicle.wings['vertical_stabilizer'].rudder = SUAVE.Components.Physical_Component()
+    
     #print vehicle
 
     return vehicle
@@ -447,6 +472,8 @@ def vehicle_setup():
 
 def configs_setup(vehicle):
     
+    
+    
     # ------------------------------------------------------------------
     #   Initialize Configurations
     # ------------------------------------------------------------------
@@ -455,6 +482,24 @@ def configs_setup(vehicle):
     base_config = SUAVE.Components.Configs.Config(vehicle)
     base_config.tag = 'base'
     configs.append(base_config)
+    
+    
+    # ------------------------------------------------------------------
+    #   Takeoff Configuration
+    # ------------------------------------------------------------------
+
+    config = SUAVE.Components.Configs.Config(base_config)
+    config.tag = 'takeoff'
+
+    config.wings['main_wing'].flaps.angle = 20. * Units.deg
+    config.wings['main_wing'].slats.angle = 25. * Units.deg
+
+    config.V2_VS_ratio = 1.21
+    config.maximum_lift_coefficient = 2.
+
+    configs.append(config)
+    
+    
 
     # ------------------------------------------------------------------
     #   Cruise Configuration
@@ -462,6 +507,22 @@ def configs_setup(vehicle):
     config = SUAVE.Components.Configs.Config(base_config)
     config.tag = 'cruise'
     config.propulsors.propulsor.number_of_engines_lift = 0
+    configs.append(config)
+    
+    
+    # ------------------------------------------------------------------
+    #   Landing Configuration
+    # ------------------------------------------------------------------
+
+    config = SUAVE.Components.Configs.Config(base_config)
+    config.tag = 'landing'
+
+    config.wings['main_wing'].flaps_angle = 30. * Units.deg
+    config.wings['main_wing'].slats_angle = 25. * Units.deg
+
+    config.Vref_VS_ratio = 1.23
+    config.maximum_lift_coefficient = 2.
+
     configs.append(config)
 
     return configs

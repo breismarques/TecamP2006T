@@ -77,10 +77,10 @@ def mission_setup(analyses,vehicle):
     segment = Segments.Climb.Constant_Speed_Constant_Rate_VSP(no_lift_segment)
     segment.tag = "climb_1"
 
-    segment.analyses.extend(analyses.base)
+    segment.analyses.extend(analyses.takeoff)
 
     
-    segment.state.numerics.number_control_points = 4
+    segment.state.numerics.number_control_points = 8
     segment.altitude_start = 0.0   * Units.km
     segment.altitude_end   = 3.0   * Units.km
     segment.air_speed      = 125.0 * Units['m/s']
@@ -103,7 +103,7 @@ def mission_setup(analyses,vehicle):
     segment_2.analyses.extend(analyses.base)
 
     
-    segment_2.state.numerics.number_control_points = 4
+    segment_2.state.numerics.number_control_points = 8
     segment_2.altitude_end   = 8.0   * Units.km
     segment_2.air_speed      = 190.0 * Units['m/s']
     segment_2.climb_rate     = 3.0   * Units['m/s']
@@ -145,7 +145,7 @@ def mission_setup(analyses,vehicle):
     segment.analyses.extend(analyses.cruise)
     
     # segment attributes     
-    segment.state.numerics.number_control_points = 4
+    segment.state.numerics.number_control_points = 8
     segment.altitude       = segment_2.altitude_end
     segment.air_speed  = 200.0 * Units['m/s']
     segment.distance       = 150. * Units.nautical_miles
@@ -181,7 +181,7 @@ def mission_setup(analyses,vehicle):
     segment.analyses.extend(analyses.base)
 
     
-    segment.state.numerics.number_control_points = 4
+    segment.state.numerics.number_control_points = 8
     segment.altitude_end = 3.0   * Units.km
     segment.air_speed    = 180.0 * Units['m/s']
     segment.descent_rate = 4.5   * Units['m/s']
@@ -200,10 +200,10 @@ def mission_setup(analyses,vehicle):
     segment = Segments.Descent.Constant_Speed_Constant_Rate_VSP(no_lift_segment)
     segment.tag = "descent_2"
 
-    segment.analyses.extend(analyses.base)
+    segment.analyses.extend(analyses.landing)
 
     
-    segment.state.numerics.number_control_points = 4
+    segment.state.numerics.number_control_points = 8
     segment.altitude_end   = 0.0   * Units.km
     segment.air_speed      = 145.0 * Units['m/s']
     segment.descent_rate     = 3.0   * Units['m/s']
