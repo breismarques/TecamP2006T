@@ -152,7 +152,7 @@ def vehicle_setup():
     #   Main Wing
     # ------------------------------------------------------------------        
     
-    wing = SUAVE.Components.Wings.Main_Wing()
+    wing = SUAVE.Components.Wings.Wing()
     wing.tag = 'main_wing'
     
     wing.thickness_to_chord      = 0.15
@@ -378,7 +378,8 @@ def vehicle_setup():
     #motor.mass_properties.mass = 9.0  * Units.kg
     #net.motor_forward          = motor
     
-    kv                         = 180. * Units['rpm/volt'] # RPM/volt is standard
+    kv               = 180. * Units['rpm/volt'] # RPM/volt is standard
+    #motor.speed_constant       = 0.0
     motor                      = size_from_kv(motor, kv)    
     motor.gear_ratio           = 1. # Gear ratio, no gearbox
     motor.gearbox_efficiency   = .98 # Gear box efficiency, no gearbox
@@ -399,7 +400,8 @@ def vehicle_setup():
     #motor.mass_properties.mass = 6.0  * Units.kg
     #net.motor_lift             = motor
     
-    kv                         = 90. * Units['rpm/volt'] # RPM/volt is standard
+    kv              = 90. * Units['rpm/volt'] # RPM/volt is standard
+    #motor.speed_constant       = 0.0
     motor                      = size_from_kv(motor, kv)    
     motor.gear_ratio           = 1. # Gear ratio, no gearbox
     motor.gearbox_efficiency   = .98 # Gear box efficiency, no gearbox

@@ -22,6 +22,7 @@ from SUAVE.Methods.Power.Battery.Sizing import initialize_from_energy_and_power,
 from SUAVE.Input_Output.OpenVSP import vsp_write
 from SUAVE.Methods.Aerodynamics.Fidelity_Zero.Lift.compute_max_lift_coeff import compute_max_lift_coeff
 from SUAVE.Optimization.write_optimization_outputs import write_optimization_outputs
+from SUAVE.Methods.Propulsion.electric_motor_sizing import size_from_kv
 #from SUAVE.Input_Output.OpenVSP import vspaero
 
 from SUAVE.Analyses.Process import Process
@@ -137,17 +138,17 @@ def simple_sizing(nexus):
     conditions             = SUAVE.Analyses.Mission.Segments.Conditions.Aerodynamics()   #assign conditions in form for propulsor sizing
     conditions.freestream  = freestream
     
-    for config in configs:
-        config.wings.horizontal_stabilizer.areas.reference = (26.0/92.0)*config.wings.main_wing.areas.reference
+    #for config in configs:
+    #    config.wings.horizontal_stabilizer.areas.reference = (26.0/92.0)*config.wings.main_wing.areas.reference
             
-        for wing in config.wings:
+    #    for wing in config.wings:
             
-            wing = SUAVE.Methods.Geometry.Two_Dimensional.Planform.wing_planform(wing)
-            wing.areas.exposed  = 0.8 * wing.areas.wetted
-            wing.areas.affected = 0.6 * wing.areas.reference
+    #        wing = SUAVE.Methods.Geometry.Two_Dimensional.Planform.wing_planform(wing)
+    #        wing.areas.exposed  = 0.8 * wing.areas.wetted
+    #        wing.areas.affected = 0.6 * wing.areas.reference
             
-        fuselage              = config.fuselages['fuselage']
-        fuselage.differential_pressure = diff_pressure 
+    #    fuselage              = config.fuselages['fuselage']
+    #    fuselage.differential_pressure = diff_pressure 
         
         #turbofan_sizing(config.propulsors['turbofan'], mach_number = mach_number, altitude = altitude)
         #compute_turbofan_geometry(config.propulsors['turbofan'], conditions)
@@ -204,6 +205,22 @@ def simple_sizing(nexus):
     #max_CL_base, CDi = compute_max_lift_coeff(base,base_conditions) 
     #base.maximum_lift_coefficient = max_CL_base
     
+    # Pull out the vehicle
+    vec = nexus.vehicle_configurations.base
+    
+    # Resize the motor
+    motor_forward = vec.propulsors.propulsor.motor_forward
+    kv    = motor_forward.speed_constant
+    motor_forward = size_from_kv(motor_forward, kv)
+
+    motor_lift = vec.propulsors.propulsor.motor_lift
+    kv    = motor_lift.speed_constant
+    motor_lift = size_from_kv(motor_lift, kv)    
+    
+    # diff the new data
+    vec.store_diff()
+    
+    
     return nexus
 
 # ----------------------------------------------------------------------        
@@ -223,11 +240,12 @@ def weights_battery(nexus):
     empty   = vec.weight_breakdown.empty
     mmotor  = vec.propulsors.propulsor.motor_forward.mass_properties.mass+vec.propulsors.propulsor.motor_lift.mass_properties.mass
     
-    # Calculate battery mass
-    batmass = MTOW - empty - payload -mmotor #-msolar
+    #Calculate battery mass
     bat     = vec.propulsors.propulsor.battery
-    #initialize_from_mass(bat,batmass)
-    #vec.propulsors.network.battery.mass_properties.mass = batmass
+    initialize_from_mass(bat,bat.mass_properties.mass)
+    
+    # diff the new data
+    vec.store_diff()
         
     # Set Battery Charge
     maxcharge = nexus.vehicle_configurations.base.propulsors.propulsor.battery.max_energy
@@ -257,7 +275,20 @@ def post_process(nexus):
     # Unpack data
     vehicle                           = nexus.vehicle_configurations.base
     results                           = nexus.results
-    #print nexus.results
+    print "SPAN"
+    print nexus.vehicle_configurations.cruise.wings.main_wing.spans.projected
+    print "Root Chord"
+    print vehicle.wings.main_wing.chords.root
+    print "Voltage"
+    print vehicle.propulsors.propulsor.voltage
+    print vehicle.propulsors.propulsor.motor_forward.speed_constant
+    print vehicle.propulsors.propulsor.motor_lift.speed_constant
+    print vehicle.propulsors.propulsor.battery.specific_energy
+    print vehicle.propulsors.propulsor.battery.specific_power
+    print vehicle.propulsors.propulsor.battery.max_voltage
+    print vehicle.propulsors.propulsor.battery.resistance
+    print vehicle.propulsors.propulsor.payload.power_draw
+    print vehicle.propulsors.propulsor.avionics.power_draw
     
     #aux = nexus.results
     
@@ -371,7 +402,7 @@ def post_process(nexus):
     rpm_lift.extend(conditions.descent_1.propulsion.rpm_lift[:,0])
     rpm_lift.extend(conditions.descent_2.propulsion.rpm_lift[:,0])
     
-    print rpm_lift
+    #print rpm_lift
     
     for x in rpm_lift:
         if x < -1:
@@ -391,7 +422,7 @@ def post_process(nexus):
     rpm_forward.extend(conditions.descent_1.propulsion.rpm_forward[:,0])
     rpm_forward.extend(conditions.descent_2.propulsion.rpm_forward[:,0])
     
-    print rpm_forward
+    #print rpm_forward
     
     for x in rpm_forward:
         if x < -0.1:
@@ -454,7 +485,7 @@ def post_process(nexus):
         AoAdeg[i]=math.degrees(AoA[i])
         i=i+1
         
-    print AoAdeg
+    #print AoAdeg
     
     mach=[]
     
@@ -464,7 +495,7 @@ def post_process(nexus):
     mach.extend(conditions.descent_1.freestream.mach_number[:,0])
     mach.extend(conditions.descent_2.freestream.mach_number[:,0])
     
-    print mach
+    #print mach
     
     for x in mach:
         if x > 1.01:
@@ -484,7 +515,7 @@ def post_process(nexus):
     cp_lift.extend(conditions.descent_1.propulsion.propeller_power_coefficient_lift[:,0])
     cp_lift.extend(conditions.descent_2.propulsion.propeller_power_coefficient_lift[:,0])
     
-    print cp_lift
+    #print cp_lift
     
     cp_forward=[]
     
@@ -494,7 +525,7 @@ def post_process(nexus):
     cp_forward.extend(conditions.descent_1.propulsion.propeller_power_coefficient[:,0])
     cp_forward.extend(conditions.descent_2.propulsion.propeller_power_coefficient[:,0])
     
-    print cp_forward
+    #print cp_forward
     
     ct_lift=[]
     
@@ -504,7 +535,7 @@ def post_process(nexus):
     ct_lift.extend(conditions.descent_1.propulsion.propeller_thrust_coefficient_lift[:,0])
     ct_lift.extend(conditions.descent_2.propulsion.propeller_thrust_coefficient_lift[:,0])
     
-    print ct_lift
+    #print ct_lift
     
     
     ct_forward=[]
@@ -515,25 +546,25 @@ def post_process(nexus):
     ct_forward.extend(conditions.descent_1.propulsion.propeller_thrust_coefficient_forward[:,0])
     ct_forward.extend(conditions.descent_2.propulsion.propeller_thrust_coefficient_forward[:,0])
     
-    print ct_forward
+    #print ct_forward
     
-    cwd = os.getcwd()
+    #cwd = os.getcwd()
             
-    myfile=cwd+'/'+"base_data.txt"
+    #myfile=cwd+'/'+"base_data.txt"
 
     ## If file exists, delete it ##
-    if os.path.isfile(myfile):
-        os.remove(myfile)
-    else:    ## Show an error ##
-        print("Error: %s file not found" % myfile)
+    #if os.path.isfile(myfile):
+    #    os.remove(myfile)
+    #else:    ## Show an error ##
+    #    print("Error: %s file not found" % myfile)
     
-    myfile=cwd+'/'+"cruise_data.txt"
+    #myfile=cwd+'/'+"cruise_data.txt"
 
     ## If file exists, delete it ##
-    if os.path.isfile(myfile):
-        os.remove(myfile)
-    else:    ## Show an error ##
-        print("Error: %s file not found" % myfile)
+    #if os.path.isfile(myfile):
+    #    os.remove(myfile)
+    #else:    ## Show an error ##
+    #    print("Error: %s file not found" % myfile)
    
     write_optimization_outputs(nexus, filename)
     

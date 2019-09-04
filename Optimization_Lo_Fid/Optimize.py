@@ -25,7 +25,7 @@ import SUAVE.Optimization.Package_Setups.scipy_setup as scipy_setup
 def main():
     
     problem = setup()
-    output  = scipy_setup.SciPy_Solve(problem,solver='SLSQP', sense_step = 1.4901161193847656e-08)
+    output  = scipy_setup.SciPy_Solve(problem)
      
     
     ## Uncomment these lines when you want to start an optimization problem from a different initial guess
@@ -58,8 +58,8 @@ def setup():
 
     #   [ tag                            , initial, (lb,ub)             , scaling , units ]
     problem.inputs = np.array([
-        [ 'wing_span'      ,  9.4   , (   5.0 ,   20.   ) ,   9.4 , Units.meter],
-        [ 'wing_root_chord'  ,  1.5    , (   1.  ,    6.   ) ,   2.  , Units.meter],
+        [ 'wing_span'      ,  9.0   , (   5.0 ,   20.   ) ,   9.0 , Units.meter],
+        [ 'wing_root_chord'  ,  1.0    , (   1.  ,    6.   ) ,   1.0  , Units.meter],
         [ 'cruise_distance'        ,  150.    , (   50.  ,    1000.   ) ,   150.  , Units.nautical_miles],
         [ 'cruise_airspeed'        ,  200.   , (   90.  ,    300.   ) ,   200.  , Units['m/s']],
         [ 'climb1_airspeed'        , 125.0   , (   50.0  ,  250.0      ) ,  125.0   , Units['m/s']],
@@ -73,15 +73,15 @@ def setup():
         [ 'climb2_rate'        ,    3.0  , (  2.   ,   12.    ) ,   3.0  , Units['m/s']],
         [ 'descent1_rate'      ,   4.5   , (  3.   ,   15.    ) ,  4.5   , Units['m/s']],
         [ 'descent2_rate'      ,    3.0  , (  2.   ,   12.    ) ,  3.0   , Units['m/s']],
-        [ 'voltage'      ,   461.   , (  100.   ,   10000.    ) ,  461.   , Units['volt']],
-        [ 'motor_kv_cruise'      ,   180.   , (  10.   ,   500.    ) ,  180.   , Units['rpm/volt']],
-        [ 'motor_kv_HL'      ,   90.   , (  5.   ,   300.    ) ,  90.   , Units['rpm/volt']],
-        [ 'bat_spec_energy'      ,   600.0  , (  300.   ,   10000.    ) ,  4500.  , Units.Wh/Units.kg],
-        [ 'bat_spec_power'      ,   0.837   , (  0.5   ,   1000.    ) ,  0.837   , Units.kW/Units.kg],
-        [ 'bat_max_voltage'      ,   60.0   , (  0.5   ,   100000.    ) ,  600.   , Units['volt']],
-        [ 'bat_resistance'      ,   0.0153   , (  0.0001   ,   100.    ) ,  0.0153   , Units['ohm']],
-        [ 'payload_draw'      ,   50.   , (  5.   ,   50000.    ) ,  50.   , Units.watts],
-        [ 'avionics_draw'      ,   50.   , (  5.   ,   50000.    ) ,  50.   , Units.watts],
+        [ 'voltage'      ,   470.   , (  100.   ,   10000.    ) ,  470.   , Units['volt']],
+        [ 'motor_kv_cruise'      ,   181.   , (  10.   ,   500.    ) ,  181.   , Units['rpm/volt']],
+        [ 'motor_kv_HL'      ,   91.   , (  5.   ,   300.    ) ,  91.   , Units['rpm/volt']],
+        [ 'bat_spec_energy'      ,   6.1  , (  3.   ,   10000.    ) ,  6.1  , Units.Wh/Units.kg],
+        [ 'bat_spec_power'      ,   0.833   , (  0.5   ,   1000.    ) ,  0.833   , Units.kW/Units.kg],
+        [ 'bat_max_voltage'      ,   60.1   , (  0.5   ,   100000.    ) ,  60.1   , Units['volt']],
+        [ 'bat_resistance'      ,   0.0151   , (  0.0001   ,   100.    ) ,  0.0151   , Units['ohm']],
+        [ 'payload_draw'      ,   50.1   , (  5.   ,   50000.    ) ,  50.1   , Units.watts],
+        [ 'avionics_draw'      ,   50.1   , (  5.   ,   50000.    ) ,  50.1   , Units.watts],
     ])
 
     # -------------------------------------------------------------------
@@ -121,7 +121,8 @@ def setup():
     # [ 'alias' , ['data.path1.name','data.path2.name'] ]
 
     problem.aliases = [
-        [ 'wing_span'          ,    'vehicle_configurations.*.wings.main_wing.spans.projected'   ],
+        [ 'wing_span'          ,    ['vehicle_configurations.base.wings.main_wing.spans.projected',
+                                     'vehicle_configurations.cruise.wings.main_wing.spans.projected'] ],
         [ 'wing_root_chord'                  ,     'vehicle_configurations.*.wings.main_wing.chords.root'         ],
         [ 'cruise_distance'            ,   'missions.mission.segments.cruise.distance'              ],
         [ 'cruise_airspeed'            ,   'missions.mission.segments.cruise.air_speed'              ],
@@ -137,8 +138,8 @@ def setup():
         [ 'descent1_rate'            ,  'missions.mission.segments.descent_1.descent_rate'               ],
         [ 'descent2_rate'            ,  'missions.mission.segments.descent_2.descent_rate'               ],
         [ 'voltage'            ,  'vehicle_configurations.*.propulsors.propulsor.voltage'               ],
-        [ 'motor_kv_cruise'            ,  'vehicle_configurations.*.propulsors.propulsor.motor_forward.kv'               ],
-        [ 'motor_kv_HL'            ,  'vehicle_configurations.*.propulsors.propulsor.motor_lift.kv'               ],
+        [ 'motor_kv_cruise'            ,  'vehicle_configurations.*.propulsors.propulsor.motor_forward.speed_constant'               ],
+        [ 'motor_kv_HL'            ,  'vehicle_configurations.*.propulsors.propulsor.motor_lift.speed_constant'               ],
         [ 'bat_spec_energy'            ,  'vehicle_configurations.*.propulsors.propulsor.battery.specific_energy'               ],
         [ 'bat_spec_power'            ,  'vehicle_configurations.*.propulsors.propulsor.battery.specific_power'               ],
         [ 'bat_max_voltage'            ,  'vehicle_configurations.*.propulsors.propulsor.battery.max_voltage'               ],
@@ -179,7 +180,8 @@ def setup():
     # -------------------------------------------------------------------
     #  Summary
     # -------------------------------------------------------------------    
-    nexus.summary = Data()    
+    #nexus.summary = Data()  
+    
     nexus.total_number_of_iterations = 0
     
     return nexus
