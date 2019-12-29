@@ -182,7 +182,15 @@ def simple_sizing(nexus):
         config.wings.vertical_stabilizer.spans.projected         = np.sqrt(config.wings.vertical_stabilizer.aspect_ratio*config.wings.vertical_stabilizer.areas.reference)
         config.wings.vertical_stabilizer.chords.root             = (2.0*config.wings.vertical_stabilizer.areas.reference)/(config.wings.vertical_stabilizer.spans.projected*(1+config.wings.vertical_stabilizer.taper))
         config.wings.vertical_stabilizer.chords.tip              = config.wings.vertical_stabilizer.chords.root*config.wings.vertical_stabilizer.taper
-        config.wings.vertical_stabilizer.chords.mean_aerodynamic = (config.wings.vertical_stabilizer.chords.root*(2.0/3.0)*((1.0+config.wings.vertical_stabilizer.taper+config.wings.vertical_stabilizer.taper**2.0)/(1.0+config.wings.vertical_stabilizer.taper)))  
+        config.wings.vertical_stabilizer.chords.mean_aerodynamic = (config.wings.vertical_stabilizer.chords.root*(2.0/3.0)*((1.0+config.wings.vertical_stabilizer.taper+config.wings.vertical_stabilizer.taper**2.0)/(1.0+config.wings.vertical_stabilizer.taper))) 
+        
+        # Resize the motor
+        kv    = config.propulsors.propulsor.motor_forward.speed_constant
+        config.propulsors.propulsor.motor_forward = size_from_kv(config.propulsors.propulsor.motor_forward, kv)
+
+        kv    = config.propulsors.propulsor.motor_lift.speed_constant
+        config.propulsors.propulsor.motor_lift = size_from_kv(config.propulsors.propulsor.motor_lift, kv)    
+    
             
         
         # diff the new data
@@ -232,19 +240,6 @@ def simple_sizing(nexus):
     max_CL_base, CDi = compute_max_lift_coeff(base,base_conditions) 
     base.maximum_lift_coefficient = max_CL_base
     
-    # Pull out the vehicle
-    vec = nexus.vehicle_configurations.base
-    
-    # Resize the motor
-    kv    = vec.propulsors.propulsor.motor_forward.speed_constant
-    vec.propulsors.propulsor.motor_forward = size_from_kv(vec.propulsors.propulsor.motor_forward, kv)
-
-    kv    = vec.propulsors.propulsor.motor_lift.speed_constant
-    vec.propulsors.propulsor.motor_lift = size_from_kv(vec.propulsors.propulsor.motor_lift, kv)    
-    
-    # diff the new data
-    vec.store_diff()
-    
     
     return nexus
 
@@ -256,7 +251,7 @@ def weights_battery(nexus):
     
     vehicle=nexus.vehicle_configurations.base
 
-    # weight analysis
+    # # Evaluate weights for all of the configurations
     weights = nexus.analyses.base.weights.evaluate()
     weights = nexus.analyses.cruise.weights.evaluate()
     vehicle.mass_properties.breakdown = weights
@@ -266,22 +261,23 @@ def weights_battery(nexus):
     empty_weight     = vehicle.mass_properties.operating_empty
     passenger_weight = vehicle.passenger_weights.mass_properties.mass
     
-    # Evaluate weights for all of the configurations
-    config = nexus.analyses.base
-    config.weights.evaluate() 
+    configs = nexus.vehicle_configurations
     
-    vec     = nexus.vehicle_configurations.base
-    payload = vec.propulsors.propulsor.payload.mass_properties.mass  
-    #msolar  = vec.propulsors.propulsor.solar_panel.mass_properties.mass
-    MTOW    = vec.mass_properties.max_takeoff
-    empty   = vec.weight_breakdown.empty
-    mmotor  = vec.propulsors.propulsor.motor_forward.mass_properties.mass+vec.propulsors.propulsor.motor_lift.mass_properties.mass
+    for config in configs:
     
-    #Calculate battery mass
-    initialize_from_mass(vec.propulsors.propulsor.battery,vec.propulsors.propulsor.battery.mass_properties.mass)
+        payload = config.propulsors.propulsor.payload.mass_properties.mass  
+        #msolar  = vec.propulsors.propulsor.solar_panel.mass_properties.mass
+        MTOW    = config.mass_properties.max_takeoff
+        empty   = config.weight_breakdown.empty
+        mmotor  = config.propulsors.propulsor.motor_forward.mass_properties.mass+config.propulsors.propulsor.motor_lift.mass_properties.mass
     
-    # diff the new data
-    vec.store_diff()
+        #Calculate battery mass
+    
+        initialize_from_mass(config.propulsors.propulsor.battery,config.propulsors.propulsor.battery.mass_properties.mass)
+        
+        # diff the new data
+        config.store_diff()
+    
         
     # Set Battery Charge
     maxcharge = nexus.vehicle_configurations.base.propulsors.propulsor.battery.max_energy
@@ -317,6 +313,10 @@ def post_process(nexus):
     print vehicle.wings.main_wing.chords.root
     print "Voltage"
     print vehicle.propulsors.propulsor.voltage
+    print "bat_spec_energy"
+    print vehicle.propulsors.propulsor.battery.specific_energy
+    print "battery_max_energy"
+    print vehicle.propulsors.propulsor.battery.max_energy
     print vehicle.propulsors.propulsor.motor_forward.speed_constant
     print vehicle.propulsors.propulsor.motor_lift.speed_constant
     print vehicle.propulsors.propulsor.battery.specific_energy

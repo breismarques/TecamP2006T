@@ -58,7 +58,7 @@ def setup():
 
     #   [ tag                            , initial, (lb,ub)             , scaling , units ]
     problem.inputs = np.array([
-        [ 'wing_span'      ,  9.4   , (   5.0 ,   15.   ) ,   9.4 , Units.meter],
+        [ 'wing_span'      ,  9.3   , (   5.0 ,   15.   ) ,   9.4 , Units.meter],
         [ 'wing_root_chord'  ,  2.0    , (   1.  ,    4.   ) ,   2.0  , Units.meter],
         [ 'cruise_distance'        ,  150.    , (   50.  ,    1000.   ) ,   150.  , Units.nautical_miles],
         [ 'cruise_airspeed'        ,  200.   , (   90.  ,    300.   ) ,   200.  , Units['m/s']],
