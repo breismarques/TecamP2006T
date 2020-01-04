@@ -116,6 +116,8 @@ def setup():
         [ 'cruise_rpm_min'       , '>', -0.01, 100000.0, Units['rpm']],
         [ 'lift_coefficient_min'       , '>', -0.1, 1.0, Units.less],
         [ 'mach_number_max'       , '<', 1.5, 1.0, Units.less],
+        [ 'AoA_min'       , '>', -0.1, 1.0, Units.deg],
+        [ 'AoA_max'       , '<', 20.0, 1.0, Units.deg]
     ])
     
     # -------------------------------------------------------------------
@@ -163,6 +165,8 @@ def setup():
         [ 'HL_rpm_min'            ,  'summary.min_rpm_lift_all_segments'           ],
         [ 'cruise_rpm_min'            ,  'summary.min_rpm_forward_all_segments'             ],
         [ 'lift_coefficient_min'            ,  'summary.min_lift_coefficient_all_segments'             ],
+        [ 'AoA_min'       , 'summary.min_aoa_all_segments'        ],
+        [ 'AoA_max'       , 'summary.max_aoa_all_segments'  ],
         [ 'mach_number_max'            ,  'summary.max_mach_number_all_segments'             ],
     ]     
     

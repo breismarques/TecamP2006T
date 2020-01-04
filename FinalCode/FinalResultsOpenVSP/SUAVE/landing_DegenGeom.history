@@ -7,10 +7,10 @@ Bref_                   9.4152860 Lunit
 Xcg_                    3.9475010 Lunit               
 Ycg_                    0.0000010 Lunit               
 Zcg_                    0.6374070 Lunit               
-Mach_                   0.1490730 no_unit             
+Mach_                   0.1536348 no_unit             
 AoA_                    5.0524698 deg                 
 Beta_                   0.0000000 deg                 
-Rho_                    1.2083710 Munit/Lunit^3       
+Rho_                    0.9349260 Munit/Lunit^3       
 Vinf_                  50.6472530 Lunit/Tunit         
 Roll__Rate              0.0000000 rad/Tunit           
 Pitch_Rate              0.0000000 rad/Tunit           
@@ -21,4 +21,3 @@ Yaw___Rate              0.0000000 rad/Tunit
 Solver Case: 1 
 
   Iter      Mach       AoA      Beta       CL         CDo       CDi      CDtot      CS        L/D        E        CFx       CFy       CFz       CMx       CMy       CMz       T/QS 
-        1   0.14907   5.05247   0.00000  -0.04878   0.15038  -0.64979  -0.49941  -0.02236   0.09768  -0.00023  -0.64297  -0.02236  -0.10582   0.96746  -0.25297  -0.07158  37.53583

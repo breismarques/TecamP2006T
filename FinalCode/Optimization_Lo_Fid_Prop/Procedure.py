@@ -313,6 +313,11 @@ def post_process(nexus):
     print "Root Chord"
     print vehicle.wings.main_wing.chords.root
     
+    file=open('ContraintsVector.txt', 'ab')
+    file.write('iteration = ')
+    file.write(str(nexus.total_number_of_iterations))
+    file.write('\n')
+    
     #aux = nexus.results
     
     #with open('outfile.txt','wb') as f:
@@ -364,6 +369,8 @@ def post_process(nexus):
     
     summary.max_battery_energy_all_segments = np.max(energy)
     summary.min_battery_energy_all_segments = np.min(energy)
+    
+    file.write('Battery Energy = '+str(energy)+'\n')
     
     print 'Max energy'
     
@@ -478,6 +485,8 @@ def post_process(nexus):
     
     summary.max_lift_coefficient_all_segments = np.max(lift_coefficient)
     
+    file.write('CL = '+str(lift_coefficient)+'\n')
+    
     for x in lift_coefficient:
         if x < -0.05:
             value=-1.0
@@ -509,11 +518,16 @@ def post_process(nexus):
     
     AoA=[]
     
-    AoA.extend(conditions.climb_1.aerodynamics.angle_of_attack[:,0])
-    AoA.extend(conditions.climb_2.aerodynamics.angle_of_attack[:,0])
-    AoA.extend(conditions.cruise.aerodynamics.angle_of_attack[:,0])
-    AoA.extend(conditions.descent_1.aerodynamics.angle_of_attack[:,0])
-    AoA.extend(conditions.descent_2.aerodynamics.angle_of_attack[:,0])
+    AoA.extend(conditions.climb_1.aerodynamics.angle_of_attack[:,0]/ Units.deg)
+    AoA.extend(conditions.climb_2.aerodynamics.angle_of_attack[:,0]/ Units.deg)
+    AoA.extend(conditions.cruise.aerodynamics.angle_of_attack[:,0]/ Units.deg)
+    AoA.extend(conditions.descent_1.aerodynamics.angle_of_attack[:,0]/ Units.deg)
+    AoA.extend(conditions.descent_2.aerodynamics.angle_of_attack[:,0]/ Units.deg)
+    
+    file.write('AoA (deg) = '+str(AoA)+'\n')
+    
+    summary.min_aoa_all_segments=np.min(AoA)
+    summary.max_aoa_all_segments=np.max(AoA)
     
     AoAdeg=np.zeros([len(AoA),1])
     i=0
@@ -551,6 +565,12 @@ def post_process(nexus):
     cp_lift.extend(conditions.descent_1.propulsion.propeller_power_coefficient_lift[:,0])
     cp_lift.extend(conditions.descent_2.propulsion.propeller_power_coefficient_lift[:,0])
     
+    summary.min_propeller_power_coefficient_lift = np.min(cp_lift)
+    
+    file.write('Cp_lift = '+str(cp_lift)+'\n')
+    
+    
+    
     #print cp_lift
     
     cp_forward=[]
@@ -560,6 +580,10 @@ def post_process(nexus):
     cp_forward.extend(conditions.cruise.propulsion.propeller_power_coefficient[:,0])
     cp_forward.extend(conditions.descent_1.propulsion.propeller_power_coefficient[:,0])
     cp_forward.extend(conditions.descent_2.propulsion.propeller_power_coefficient[:,0])
+    
+    summary.min_propeller_power_coefficient_forward = np.min(cp_forward)
+    
+    file.write('Cp_forward = '+str(cp_forward)+'\n')
     
     #print cp_forward
     
@@ -571,6 +595,10 @@ def post_process(nexus):
     ct_lift.extend(conditions.descent_1.propulsion.propeller_thrust_coefficient_lift[:,0])
     ct_lift.extend(conditions.descent_2.propulsion.propeller_thrust_coefficient_lift[:,0])
     
+    summary.min_propeller_thrust_coefficient_lift = np.min(ct_lift)
+    
+    file.write('Ct_lift = '+str(ct_lift)+'\n')
+    
     #print ct_lift
     
     
@@ -581,6 +609,13 @@ def post_process(nexus):
     ct_forward.extend(conditions.cruise.propulsion.propeller_thrust_coefficient_forward[:,0])
     ct_forward.extend(conditions.descent_1.propulsion.propeller_thrust_coefficient_forward[:,0])
     ct_forward.extend(conditions.descent_2.propulsion.propeller_thrust_coefficient_forward[:,0])
+    
+    summary.min_propeller_thrust_coefficient_forward = np.min(ct_forward)
+    
+    file.write('Ct_forward = '+str(ct_forward)+'\n')
+    file.write('\n')
+    file.write('\n')
+    file.close()
     
     #print ct_forward
     
