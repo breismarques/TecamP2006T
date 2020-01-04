@@ -123,7 +123,7 @@ def base_analysis(vehicle):
     
     # ------------------------------------------------------------------
     #  Aerodynamics Analysis
-    aerodynamics = SUAVE.Analyses.Aerodynamics.Fidelity_Zero()
+    aerodynamics = SUAVE.Analyses.Aerodynamics.Open_VSP_Analysis_No_Surrogates()
     aerodynamics.geometry = vehicle
     aerodynamics.settings.drag_coefficient_increment = 0.0000
     #aerodynamics.settings.maximum_lift_coefficient = np.inf
@@ -1221,53 +1221,53 @@ def plot_mission(configs,results):
     file.write('Battery Draw/Charging Power (W) = '+str(bat_draw_full)+'\n')
     file.write('Battery Energy (MJ) = '+str(bat_energy_full)+'\n')
     file.write('\n')
+    file.close()
     
     
     # ------------------------------------------------------------------    
     #  Calculate CL With VSPAERO
     # ------------------------------------------------------------------
     
-    cl_VSP_full=[]
-    cd_VSP_full=[]
+    #cl_VSP_full=[]
+    #cd_VSP_full=[]
     
-    for segment in results.segments.values():
+    #for segment in results.segments.values():
 
-        vel_sound     = segment.conditions.freestream.speed_of_sound[:,0]
-        rho           = segment.conditions.freestream.density[:,0]
-        AoA           = segment.conditions.aerodynamics.angle_of_attack[:,0]
-        mach          = segment.conditions.freestream.mach_number[:,0]
-        iters         = 10
-        rpm_forward   = segment.conditions.propulsion.rpm_forward[:,0]
-        rpm_lift      = segment.conditions.propulsion.rpm_lift[:,0]
-        Cp_lift       = segment.conditions.propulsion.propeller_power_coefficient_lift[:,0]
-        Cp_forward    = segment.conditions.propulsion.propeller_power_coefficient[:,0]
-        Ct_lift       = segment.conditions.propulsion.propeller_thrust_coefficient_lift[:,0]
-        Ct_forward    = segment.conditions.propulsion.propeller_thrust_coefficient_forward[:,0]
-        tag = segment.numerics.config_tag
-        engines_number_tot = segment.numerics.engines_number_tot
+    #    vel_sound     = segment.conditions.freestream.speed_of_sound[:,0]
+    #    rho           = segment.conditions.freestream.density[:,0]
+    #    AoA           = segment.conditions.aerodynamics.angle_of_attack[:,0]
+    #    mach          = segment.conditions.freestream.mach_number[:,0]
+    #    iters         = 10
+    #    rpm_forward   = segment.conditions.propulsion.rpm_forward[:,0]
+    #    rpm_lift      = segment.conditions.propulsion.rpm_lift[:,0]
+    #    Cp_lift       = segment.conditions.propulsion.propeller_power_coefficient_lift[:,0]
+    #    Cp_forward    = segment.conditions.propulsion.propeller_power_coefficient[:,0]
+    #    Ct_lift       = segment.conditions.propulsion.propeller_thrust_coefficient_lift[:,0]
+    #    Ct_forward    = segment.conditions.propulsion.propeller_thrust_coefficient_forward[:,0]
+    #    tag = segment.numerics.config_tag
+    #    engines_number_tot = segment.numerics.engines_number_tot
         
-        print 'TAG'
-        print tag
-        print 'NEngines'
-        print engines_number_tot
+    #    print 'TAG'
+    #    print tag
+    #    print 'NEngines'
+    #    print engines_number_tot
         
-        data_len = len(AoA)
-        inviscid_lift = np.zeros([data_len,1])
-        CD = np.zeros([data_len,1])
-        for ii,_ in enumerate(AoA):
-            inviscid_lift[ii], CD[ii] = vspaero(vel_sound[ii],tag + ".vsp3", rho[ii], AoA[ii], mach[ii], iters, rpm_forward[ii], rpm_lift[ii], engines_number_tot, Cp_lift[ii], Cp_forward[ii], Ct_lift[ii], Ct_forward[ii])
-            print 'CL='+str(inviscid_lift[ii])
-            print 'CD='+str(CD[ii])
+    #    data_len = len(AoA)
+    #    inviscid_lift = np.zeros([data_len,1])
+    #    CD = np.zeros([data_len,1])
+    #    for ii,_ in enumerate(AoA):
+    #        inviscid_lift[ii], CD[ii] = vspaero(vel_sound[ii],tag + ".vsp3", rho[ii], AoA[ii], mach[ii], iters, rpm_forward[ii], rpm_lift[ii], engines_number_tot, Cp_lift[ii], Cp_forward[ii], Ct_lift[ii], Ct_forward[ii])
+    #        print 'CL='+str(inviscid_lift[ii])
+    #        print 'CD='+str(CD[ii])
             
-        cl_VSP_full.extend(inviscid_lift)
-        cd_VSP_full.extend(CD)
+    #    cl_VSP_full.extend(inviscid_lift)
+    #    cd_VSP_full.extend(CD)
         
             
         
-    file.write('CL VSP = '+str(cl_VSP_full)+'\n')
-    file.write('CD VSP = '+str(cd_VSP_full)+'\n') 
-    file.write('\n')   
-    file.close()
+    #file.write('CL VSP = '+str(cl_VSP_full)+'\n')
+    #file.write('CD VSP = '+str(cd_VSP_full)+'\n') 
+    #file.write('\n')   
     
         
     return
