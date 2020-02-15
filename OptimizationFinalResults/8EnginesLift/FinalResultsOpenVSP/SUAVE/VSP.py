@@ -271,10 +271,10 @@ def vehicle_setup():
     wing = SUAVE.Components.Wings.Main_Wing()
     wing.tag = 'main_wing'
     
-    wing.thickness_to_chord      = 0.1493591532525736
-    wing.taper                   = 0.8849509197976578
-    wing.spans.projected         = 9.415286453622912 * Units.meter
-    wing.chords.root             = 1.953762438500665 * Units.meter
+    wing.thickness_to_chord      = 0.481907650081982
+    wing.taper                   = 0.5510144311538702
+    wing.spans.projected         = 14.977045391944165 * Units.meter
+    wing.chords.root             = 1.015907254708799 * Units.meter
     wing.chords.tip              = wing.chords.root*wing.taper
     wing.chords.mean_aerodynamic = (wing.chords.root*(2.0/3.0)*((1.0+wing.taper+wing.taper**2.0)/(1.0+wing.taper)))
     wing.areas.reference         = (wing.chords.root+wing.chords.tip)*wing.spans.projected/2
@@ -422,11 +422,11 @@ def vehicle_setup():
     net.nacelle_diameter_forward  = 0.1732 * Units.meters
     net.engine_length_lift        = 0.47244 * Units.meters
     net.engine_length_forward     = 1.2 * Units.meters
-    net.number_of_engines_lift    = 14
+    net.number_of_engines_lift    = 8
     net.number_of_engines_forward = 2
     net.thrust_angle_lift         = 0.0 * Units.degrees
     net.thrust_angle_forward      = 0.0 * Units.degrees
-    net.voltage           = 480.1083735370518 * Units['volt']  #461.
+    net.voltage           = 470.0*0.6474242325755908 * Units['volt']  #461.
     net.areas_forward             = Data()
     net.areas_forward.wetted      = 1.1*np.pi*net.nacelle_diameter_forward*net.engine_length_forward
     net.areas_lift             = Data()
@@ -505,9 +505,8 @@ def vehicle_setup():
     #motor.mass_properties.mass = 9.0  * Units.kg
     #net.motor_forward          = motor
     
-    kv               = 176.211311431488 * Units['rpm/volt'] # RPM/volt is standard
-    #motor.speed_constant       = 0.0
-    motor                      = size_from_kv(motor, kv)    
+    motor.speed_constant       = 181.0*1.0355042451643204 * Units['rpm/volt'] # RPM/volt is standard
+    motor                      = size_from_kv(motor, motor.speed_constant)    
     motor.gear_ratio           = 1. # Gear ratio, no gearbox
     motor.gearbox_efficiency   = .98 # Gear box efficiency, no gearbox
     motor.motor_efficiency     = 0.825;
@@ -528,9 +527,8 @@ def vehicle_setup():
     #net.motor_lift             = motor
     
     
-    kv              = 89.9651519324092 * Units['rpm/volt'] # RPM/volt is standard
-    #motor.speed_constant       = 0.0
-    motor                      = size_from_kv(motor, kv)    
+    motor.speed_constant       = 91.0*1.1696877795956038* Units['rpm/volt'] # RPM/volt is standard
+    motor                      = size_from_kv(motor, motor.speed_constant)    
     motor.gear_ratio           = 1. # Gear ratio, no gearbox
     motor.gearbox_efficiency   = .98 # Gear box efficiency, no gearbox
     motor.motor_efficiency     = 0.825;
@@ -538,22 +536,22 @@ def vehicle_setup():
     
     # Component 4 - the Payload
     payload = SUAVE.Components.Energy.Peripherals.Payload()
-    payload.power_draw           = 24.712166073558198 * Units.watts 
+    payload.power_draw           = 50.1*0.09980039920159682 * Units.watts 
     payload.mass_properties.mass = 5.0 * Units.kg
     net.payload                  = payload
     
     # Component 5 - the Avionics
     avionics = SUAVE.Components.Energy.Peripherals.Avionics()
-    avionics.power_draw = 24.712166073558198 * Units.watts
+    avionics.power_draw = 50.1*0.09980039920159689 * Units.watts
     net.avionics        = avionics      
 
     # Component 6 - the Battery
     bat = SUAVE.Components.Energy.Storages.Batteries.Constant_Mass.Lithium_Ion()
     bat.mass_properties.mass = 386.0 * Units.kg
-    bat.specific_energy      = 6.1*16.27307501253504 * Units.Wh/Units.kg  #192.84
+    bat.specific_energy      = 6.1*6.1843470683098545 * Units.Wh/Units.kg  #192.84
     bat.specific_power       = 0.833*1.0 * Units.kW/Units.kg  #0.837
-    bat.resistance           = 0.0001000000000622235
-    bat.max_voltage          = 60.1 * Units['volt']   #10000.
+    bat.resistance           = 0.0151*0.006622523896808624 * Units['ohm']
+    bat.max_voltage          = 60.1*1.0 * Units['volt']   #10000.
     initialize_from_mass(bat,bat.mass_properties.mass)
     net.battery              = bat
    
@@ -738,9 +736,9 @@ def mission_setup(analyses,vehicle):
     
     segment.state.numerics.number_control_points = 8
     segment.altitude_start = 0.0   * Units.km
-    segment.altitude_end   = 3.0*0.42058521970732304   * Units.km
-    segment.air_speed      = 125.0*1.839999999854266 * Units['m/s']
-    segment.climb_rate     = 6.0*1.9677542476138175   * Units['m/s']
+    segment.altitude_end   = 3.0*0.3333341710125279   * Units.km
+    segment.air_speed      = 125.0*0.4004441725450914 * Units['m/s']
+    segment.climb_rate     = 6.0*0.5000220258858309   * Units['m/s']
     segment.battery_energy = vehicle.base.propulsors.propulsor.battery.max_energy
 
     # add to misison
@@ -760,9 +758,9 @@ def mission_setup(analyses,vehicle):
 
     
     segment_2.state.numerics.number_control_points = 8
-    segment_2.altitude_end   = 8.0*1.5902479055263   * Units.km
-    segment_2.air_speed      = 190.0*1.3157894677458328 * Units['m/s']
-    segment_2.climb_rate     = 3.0*2.3494383384946915   * Units['m/s']
+    segment_2.altitude_end   = 8.0*1.8745162477351487   * Units.km
+    segment_2.air_speed      = 190.0*1.3157888689425166 * Units['m/s']
+    segment_2.climb_rate     = 3.0*0.666668149241347   * Units['m/s']
 
     # add to misison
     mission.append_segment(segment_2)
@@ -803,8 +801,8 @@ def mission_setup(analyses,vehicle):
     # segment attributes     
     segment.state.numerics.number_control_points = 8
     segment.altitude       = segment_2.altitude_end
-    segment.air_speed  = 200.0*0.9193748306746309 * Units['m/s']
-    segment.distance       = 150.0*3.262800646050794 * Units.nautical_miles
+    segment.air_speed  = 200.0*0.45004762425563916 * Units['m/s']
+    segment.distance       = 150.0*3.3333283166624934 * Units.nautical_miles
     #segment.battery_energy = vehicle.base.propulsors.propulsor.battery.max_energy
     
     mission.append_segment(segment)    
@@ -838,9 +836,9 @@ def mission_setup(analyses,vehicle):
 
     
     segment.state.numerics.number_control_points = 8
-    segment.altitude_end = 3.0*0.9568690890790951   * Units.km
-    segment.air_speed    = 180.0*1.388888883718405 * Units['m/s']
-    segment.descent_rate = 4.5*1.7549070777796028   * Units['m/s']
+    segment.altitude_end = 3.0*1.9721323112357887   * Units.km
+    segment.air_speed    = 180.0*1.3888805554288997 * Units['m/s']
+    segment.descent_rate = 4.5*0.6666822224845956   * Units['m/s']
     #segment.battery_energy = vehicle.base.propulsors.propulsor.battery.max_energy
 
     # add to misison
@@ -861,8 +859,8 @@ def mission_setup(analyses,vehicle):
     
     segment.state.numerics.number_control_points = 8
     segment.altitude_end   = 0.0   * Units.km
-    segment.air_speed      = 145.0*0.349291401168864 * Units['m/s']
-    segment.descent_rate     = 3.0*1.1930801868699643   * Units['m/s']
+    segment.air_speed      = 145.0*0.5594647258664982 * Units['m/s']
+    segment.descent_rate     = 3.0*0.6666708657657813   * Units['m/s']
 
     # add to misison
     mission.append_segment(segment)
