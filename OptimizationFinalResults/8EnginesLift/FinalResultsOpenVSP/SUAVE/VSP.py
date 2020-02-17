@@ -1205,6 +1205,44 @@ def plot_mission(results):
     file.write('Battery Draw/Charging Power (W) = '+str(bat_draw_full)+'\n')
     file.write('Battery Energy (MJ) = '+str(bat_energy_full)+'\n')
     file.write('\n') 
+    
+
+    cp_lift=[]
+    cp_forward=[]
+    ct_lift=[]
+    ct_forward=[]
+    vel_sound_full=[]
+    vel_sound_full_ms=[]
+    rho_full=[] 
+    
+    for segment in results.segments.values():
+        
+        cp_lift_aux   = segment.conditions.propulsion.propeller_power_coefficient_lift[:,0]
+        cp_lift.extend(cp_lift_aux)
+        cp_forward_aux = segment.conditions.propulsion.propeller_power_coefficient[:,0]
+        cp_forward.extend(cp_forward_aux)
+        ct_lift_aux    = segment.conditions.propulsion.propeller_thrust_coefficient_lift[:,0]
+        ct_lift.extend(ct_lift_aux)
+        ct_forward_aux = segment.conditions.propulsion.propeller_thrust_coefficient_forward[:,0]
+        ct_forward.extend(ct_forward_aux)
+        vel_sound_aux = segment.conditions.freestream.speed_of_sound[:,0]
+        vel_sound_full.extend(vel_sound_aux)
+        vel_sound_aux_ms = segment.conditions.freestream.speed_of_sound[:,0] / Units['m/s']
+        vel_sound_full_ms.extend(vel_sound_aux_ms) 
+        rho_aux = segment.conditions.freestream.density[:,0]
+        rho_full.extend(rho_aux)
+        
+        
+    file.write('Cp_lift = '+str(cp_lift)+'\n')
+    file.write('Cp_forward = '+str(cp_forward)+'\n')
+    file.write('Ct_lift = '+str(ct_lift)+'\n')
+    file.write('Ct_forward = '+str(ct_forward)+'\n')
+    file.write('Vel Sound (default) = '+str(vel_sound_full)+'\n')
+    file.write('Vel Sound (m/s) = '+str(vel_sound_full_ms)+'\n')
+    file.write('Rho (default) = '+str(rho_full)+'\n')
+    file.write('\n')
+    
+    
     file.close()
     
         
